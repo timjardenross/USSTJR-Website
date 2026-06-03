@@ -47,6 +47,25 @@ body {
     letter-spacing: 1px;
 }
 
+.two-column-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.command-status {
+    margin-bottom: 16px;
+}
+
+.captain-log-panel {
+    text-align: center;
+}
+
+.latest-entry-panel {
+    margin-top: 16px;
+}
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -60,18 +79,25 @@ body {
     border-radius: 18px;
     padding: 16px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 140px;
 }
 
 .metric-card h3 {
     margin: 0;
     color: #ffcc66;
     font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .metric-card p {
     margin: 8px 0 0;
     font-size: 2rem;
     font-weight: bold;
+    color: #ffffff;
 }
 
 .button {
@@ -113,6 +139,10 @@ body {
     }
 
     .status-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .two-column-grid {
         grid-template-columns: 1fr;
     }
 }
