@@ -11,80 +11,88 @@
 <body>
 
     <header class="header">
-        <h1>USS TJR</h1>
-        <p class="subtitle">Personal Command Interface</p>
+        <h1>USS TJR Command Deck</h1>
+        <p class="subtitle">Personal Resilience Operating System</p>
     </header>
 
     <main class="container">
 
-        <section class="card">
-            <h2>Current Stardate</h2>
-            <p id="stardate">260604.01</p>
+        <section class="card command-status">
+            <h2>Command Status</h2>
+            <p><strong>Current Stardate:</strong> <span id="stardate">260604.01</span></p>
+            <p><strong>Mission Status:</strong> 🟡 Active</p>
         </section>
 
-        <section class="card">
-            <h2>Mission Status</h2>
-            <p>🟡 Active</p>
+        <section class="dashboard-grid" aria-label="System status metrics">
+            <div class="metric-card">
+                <h3>Mood</h3>
+                <p>7</p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Energy</h3>
+                <p>6</p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Pain</h3>
+                <p>5</p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Stress</h3>
+                <p>4</p>
+            </div>
         </section>
 
-        <section class="card">
-            <h2>Today's Focus</h2>
-            <ul>
-                <li>🩺 Health & Recovery</li>
-                <li>🏦 Career Growth</li>
-                <li>🌱 TJR Mind Body</li>
-                <li>🤖 USS TJR Development</li>
-            </ul>
-        </section>
-
-        <section class="card">
+        <section class="card captain-log-panel">
             <h2>Captain's Log</h2>
+            <p>Begin today's check-in and generate a structured Captain's Log entry.</p>
 
             <a href="captains-log.html" class="button">
                 Start New Log
             </a>
         </section>
 
-        <section class="card">
-            <h2>Current Missions</h2>
+        <section class="two-column-grid">
+            <div class="card">
+                <h2>Current Missions</h2>
+                <ul>
+                    <li>Reach 95kg</li>
+                    <li>Improve mobility</li>
+                    <li>Develop TJR Mind Body</li>
+                    <li>Build USS TJR</li>
+                    <li>Grow operational resilience expertise</li>
+                </ul>
+            </div>
 
-            <ul>
-                <li>Reach 95kg</li>
-                <li>Improve Mobility</li>
-                <li>Develop TJR Mind Body</li>
-                <li>Build USS TJR</li>
-                <li>Grow Operational Resilience Expertise</li>
-            </ul>
-        </section>
-
-        <section class="card">
-            <h2>System Status</h2>
-
-            <div class="status-grid">
-                <div>Mood: --</div>
-                <div>Energy: --</div>
-                <div>Pain: --</div>
-                <div>Stress: --</div>
+            <div class="card">
+                <h2>Today's Focus</h2>
+                <ul>
+                    <li>🩺 Health & Recovery</li>
+                    <li>🏦 Career Growth</li>
+                    <li>🌱 TJR Mind Body</li>
+                    <li>🤖 USS TJR Development</li>
+                </ul>
             </div>
         </section>
 
-        <section class="card">
+        <section class="card latest-entry-panel">
             <h2>Latest Entry</h2>
+            <p><strong>Stardate:</strong> 260604.01</p>
 
-            <p>Stardate 260604.01</p>
-
-            <ul>
-                <li>Mood: 7</li>
-                <li>Energy: 6</li>
-                <li>Pain: 5</li>
-                <li>Stress: 4</li>
-            </ul>
+            <div class="status-grid">
+                <div>Mood: 7</div>
+                <div>Energy: 6</div>
+                <div>Pain: 5</div>
+                <div>Stress: 4</div>
+            </div>
         </section>
 
     </main>
 
     <footer class="footer">
-        <p>USS TJR v1.0</p>
+        <p>USS TJR v1.0 · Command Deck Online</p>
     </footer>
 
     <script src="js/app.js"></script>
