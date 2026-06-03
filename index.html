@@ -19,29 +19,30 @@
 
         <section class="card command-status">
             <h2>Command Status</h2>
-            <p><strong>Current Stardate:</strong> <span id="stardate">260604.01</span></p>
+            <p><strong>Current Stardate:</strong> <span id="commandStardate">--</span></p>
             <p><strong>Mission Status:</strong> 🟡 Active</p>
+            <p><strong>System Status:</strong> 🟢 Online</p>
         </section>
 
         <section class="dashboard-grid" aria-label="System status metrics">
             <div class="metric-card">
                 <h3>Mood</h3>
-                <p>7</p>
+                <p id="commandMood">--</p>
             </div>
 
             <div class="metric-card">
                 <h3>Energy</h3>
-                <p>6</p>
+                <p id="commandEnergy">--</p>
             </div>
 
             <div class="metric-card">
                 <h3>Pain</h3>
-                <p>5</p>
+                <p id="commandPain">--</p>
             </div>
 
             <div class="metric-card">
                 <h3>Stress</h3>
-                <p>4</p>
+                <p id="commandStress">--</p>
             </div>
         </section>
 
@@ -52,6 +53,7 @@
             <a href="captains-log.html" class="button">
                 Start New Log
             </a>
+            <p><em>Daily logging system operational.</em></p>
         </section>
 
         <section class="two-column-grid">
@@ -61,7 +63,7 @@
                     <li>Reach 95kg</li>
                     <li>Improve mobility</li>
                     <li>Develop TJR Mind Body</li>
-                    <li>Build USS TJR</li>
+                    <li>Deploy USS TJR v1.0</li>
                     <li>Grow operational resilience expertise</li>
                 </ul>
             </div>
@@ -77,15 +79,26 @@
             </div>
         </section>
 
+        <section class="card">
+            <h2>System Modules</h2>
+            <ul>
+                <li>🖖 Command Deck — Online</li>
+                <li>📝 Captain's Log — Online</li>
+                <li>🏥 Medical Bay — In Development</li>
+                <li>🎯 Mission Control — Planned</li>
+                <li>🧠 Computer Core — Planned</li>
+            </ul>
+        </section>
+
         <section class="card latest-entry-panel">
             <h2>Latest Entry</h2>
-            <p><strong>Stardate:</strong> 260604.01</p>
+            <p><strong>Stardate:</strong> <span id="latestEntryStardate">No entry recorded yet</span></p>
 
             <div class="status-grid">
-                <div>Mood: 7</div>
-                <div>Energy: 6</div>
-                <div>Pain: 5</div>
-                <div>Stress: 4</div>
+                <div>Mood: <span id="latestMood">--</span></div>
+                <div>Energy: <span id="latestEnergy">--</span></div>
+                <div>Pain: <span id="latestPain">--</span></div>
+                <div>Stress: <span id="latestStress">--</span></div>
             </div>
         </section>
 

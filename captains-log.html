@@ -20,34 +20,35 @@
         <section class="card">
             <h2>Log Details</h2>
 
-            <label>Stardate</label>
-            <input type="text" id="stardateInput" value="260604.01">
+            <label for="stardateInput">Stardate</label>
+            <input type="text" id="stardateInput">
 
-            <label>Date</label>
+            <label for="dateInput">Date</label>
             <input type="date" id="dateInput">
         </section>
 
         <section class="dashboard-grid">
             <div class="metric-card">
                 <h3>Mood</h3>
-                <input type="number" id="mood" min="0" max="10">
+                <input type="number" id="mood" min="0" max="10" placeholder="0-10">
             </div>
 
             <div class="metric-card">
                 <h3>Energy</h3>
-                <input type="number" id="energy" min="0" max="10">
+                <input type="number" id="energy" min="0" max="10" placeholder="0-10">
             </div>
 
             <div class="metric-card">
                 <h3>Pain</h3>
-                <input type="number" id="pain" min="0" max="10">
+                <input type="number" id="pain" min="0" max="10" placeholder="0-10">
             </div>
 
             <div class="metric-card">
                 <h3>Stress</h3>
-                <input type="number" id="stress" min="0" max="10">
+                <input type="number" id="stress" min="0" max="10" placeholder="0-10">
             </div>
         </section>
+        <p class="helper-text">Use 0-10 where 0 is lowest and 10 is highest.</p>
 
         <section class="card">
             <h2>Today's Wins</h2>
@@ -86,6 +87,18 @@
             <textarea id="mindbody" rows="4"></textarea>
         </section>
 
+        <section class="card captain-log-panel">
+            <h2>Voice Capture</h2>
+            <p>Speak your reflections naturally. The transcript will be saved with your draft and included in the generated log.</p>
+
+            <button class="button" type="button" onclick="startVoiceCapture()">🎤 Start Voice Capture</button>
+            <button class="button secondary-button" type="button" onclick="stopVoiceCapture()">⏹ Stop Voice Capture</button>
+
+            <p id="recordingStatus">⚪ Not recording</p>
+
+            <textarea id="voiceCapture" rows="8" placeholder="Voice transcript will appear here..."></textarea>
+        </section>
+
         <section class="card">
             <h2>Tomorrow's Priorities</h2>
 
@@ -97,8 +110,10 @@
         <section class="card captain-log-panel">
             <h2>Generate Log</h2>
 
-            <button class="button" onclick="generateLog()">Generate Markdown</button>
-            <button class="button secondary-button" onclick="copyLog()">Copy Markdown</button>
+            <button class="button" type="button" onclick="generateLog()">Generate Markdown</button>
+            <button class="button secondary-button" type="button" onclick="copyLog()">Copy Markdown</button>
+            <button class="button" type="button" onclick="downloadLog()">Download + Reset Form</button>
+            <button class="button secondary-button" type="button" onclick="clearDraftAndResetForm()">Clear Draft</button>
 
             <textarea id="markdownOutput" rows="20" readonly></textarea>
         </section>

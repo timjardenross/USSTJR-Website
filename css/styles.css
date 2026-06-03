@@ -133,6 +133,41 @@ body {
     color: #ffcc66;
 }
 
+label {
+    display: block;
+    margin: 14px 0 6px;
+    color: #ffcc66;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+input,
+textarea {
+    width: 100%;
+    background: #0d0d14;
+    color: #ffffff;
+    border: 2px solid #ff9966;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 1rem;
+    font-family: Arial, Helvetica, sans-serif;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #ffcc66;
+    box-shadow: 0 0 10px rgba(255, 204, 102, 0.35);
+}
+
+textarea {
+    resize: vertical;
+}
+
 @media (max-width: 768px) {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
