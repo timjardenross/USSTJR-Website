@@ -16,13 +16,6 @@
         <p class="subtitle">Daily Mission Record</p>
     </header>
 
-    <nav class="nav-bar" aria-label="Site navigation">
-        <a href="index.html">Command Deck</a>
-        <a href="captains-log.html" class="active">Captain's Log</a>
-        <a href="medical-bay.html">Medical Bay</a>
-    </nav>
-
-    <main class="container">
     <main id="mainContent" class="container">
         <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
 
@@ -133,12 +126,12 @@
         </section>
 
         <section class="card captain-log-panel" aria-labelledby="generateLogHeading">
-            <h2 id="generateLogHeading">Captain's Log Actions</h2>
+            <h2 id="generateLogHeading">Generate Log</h2>
 
-            <button id="saveCaptainLogButton" class="button" type="button">Save Captain's Log</button>
-            <button id="generateLogButton" class="button secondary-button" type="button">Preview Markdown</button>
+            <button id="generateLogButton" class="button" type="button">Generate Markdown</button>
+            <button id="saveCommandDeckStatusButton" class="button" type="button">Save Status</button>
             <button id="copyLogButton" class="button secondary-button" type="button">Copy Markdown</button>
-            <button id="downloadLogButton" class="button secondary-button" type="button">Download Markdown</button>
+            <button id="downloadLogButton" class="button" type="button">Download Markdown</button>
             <button id="resetFormButton" class="button secondary-button" type="button">Reset Form</button>
 
             <label for="markdownOutput" class="visually-hidden">Generated markdown output</label>
