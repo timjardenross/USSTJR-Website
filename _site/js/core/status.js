@@ -10,6 +10,18 @@ function cancelStatusClearTimer() {
     }
 }
 
+function getSuccessStatusTimeout() {
+    if (window.USSTJR_STATUS_TIMEOUT_MS !== undefined) {
+        const timeout = Number(window.USSTJR_STATUS_TIMEOUT_MS);
+
+        if (Number.isFinite(timeout) && timeout >= 0) {
+            return timeout;
+        }
+    }
+
+    return SUCCESS_STATUS_TIMEOUT_MS;
+}
+
 export function showStatus(message, type) {
     const statusElement = document.getElementById("appStatus");
     const statusType = type || "info";
@@ -27,7 +39,7 @@ export function showStatus(message, type) {
         statusClearTimer = setTimeout(function () {
             statusClearTimer = null;
             clearStatus();
-        }, SUCCESS_STATUS_TIMEOUT_MS);
+        }, getSuccessStatusTimeout());
     }
 }
 

@@ -137,15 +137,18 @@ test("Status messages auto-dismiss successes and preserve errors", async ({ page
     await fillCaptainsLog(page, {
         wins: "E2E status auto-dismiss"
     });
+    await page.evaluate(function () {
+        window.USSTJR_STATUS_TIMEOUT_MS = 50;
+    });
 
     await page.click("#saveCaptainLogButton");
     await expect(page.locator("#appStatus")).toContainText("saved");
-    await expect(page.locator("#appStatus")).toBeHidden({ timeout: 6000 });
+    await expect(page.locator("#appStatus")).toBeHidden({ timeout: 1000 });
 
     await page.fill("#mood", "11");
     await page.click("#saveCaptainLogButton");
     await expect(page.locator("#appStatus")).toContainText("Mood must be a number from 0 to 10.");
-    await page.waitForTimeout(5100);
+    await page.waitForTimeout(100);
     await expect(page.locator("#appStatus")).toBeVisible();
     await expect(page.locator("#appStatus")).toContainText("Mood must be a number from 0 to 10.");
 });

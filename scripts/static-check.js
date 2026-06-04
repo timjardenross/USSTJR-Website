@@ -229,7 +229,13 @@ assert(e2eSpecJs.includes("Computer Core local query workflow"), "Missing Comput
 assert(e2eSpecJs.includes("Backup export and import"), "Missing backup E2E test.");
 assert(productionSmokeSpecJs.includes("production pages load without runtime errors"), "Missing production smoke test.");
 assert(validationWorkflowYml.includes("name: USS TJR Validation"), "Validation workflow must have a clear USS TJR name.");
+assert(validationWorkflowYml.includes("actions/checkout@v5"), "Validation workflow must use Node 24-compatible checkout action.");
+assert(validationWorkflowYml.includes("actions/setup-node@v5"), "Validation workflow must use Node 24-compatible setup-node action.");
+assert(validationWorkflowYml.includes('node-version: "24"'), "Validation workflow must run on Node 24.");
 assert(productionDeployWorkflowYml.includes("name: USS TJR Production Deploy"), "Production deploy workflow must have a clear USS TJR name.");
+assert(productionDeployWorkflowYml.includes("actions/checkout@v5"), "Production workflow must use Node 24-compatible checkout action.");
+assert(productionDeployWorkflowYml.includes("actions/setup-node@v5"), "Production workflow must use Node 24-compatible setup-node action.");
+assert(productionDeployWorkflowYml.includes('node-version: "24"'), "Production workflow must run on Node 24.");
 assert(productionDeployWorkflowYml.includes("needs: validation"), "Deployment must depend on validation.");
 assert(productionDeployWorkflowYml.includes("actions/deploy-pages"), "Production workflow must deploy through GitHub Pages.");
 assert(productionDeployWorkflowYml.includes("npm run test:prod"), "Production workflow must run production smoke tests.");
