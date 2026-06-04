@@ -15,7 +15,10 @@ const jsFiles = [
     "js/modules/voice-capture.js",
     "js/modules/confirm-modal.js",
     "playwright.config.js",
+    "playwright.production.config.js",
+    "scripts/prepare-pages-artifact.js",
     "scripts/static-server.js",
+    "tests/production-smoke.spec.js",
     "tests/usstjr.spec.js"
 ];
 

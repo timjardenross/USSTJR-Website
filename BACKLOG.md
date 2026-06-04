@@ -18,6 +18,8 @@
 - Build Medical Bay Phase 1 for daily pain, mood, sleep, energy, notes, history, markdown summaries, and backup support.
 - Split `js/app.js` into native ES modules with `js/main.js` as the browser entry point.
 - Add Playwright E2E coverage for Command Deck, Captain's Log, Medical Bay, backup/restore, confirmation modal, and ES module browser loading.
+- Add Captain's Log stardate auto-calculation with date-based sequencing, draft preservation, history preservation, and reset regeneration.
+- Add one-click Captain's Log save that generates markdown, saves history, syncs Command Deck metrics, and preserves stardate sequencing.
 
 ## Next Backlog Items
 

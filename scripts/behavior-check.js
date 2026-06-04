@@ -24,7 +24,10 @@ const appSource = moduleFiles.map(function (filePath) {
 
 function createElement(initialState) {
     const element = Object.assign({
-        addEventListener() {},
+        addEventListener(eventName, handler) {
+            this.listeners[eventName] = this.listeners[eventName] || [];
+            this.listeners[eventName].push(handler);
+        },
         appendChild(child) {
             this.children.push(child);
         },
@@ -40,8 +43,14 @@ function createElement(initialState) {
         },
         hidden: false,
         href: "",
+        listeners: {},
         select() {},
         setSelectionRange() {},
+        dispatchEvent(event) {
+            (this.listeners[event.type] || []).forEach(function (handler) {
+                handler(event);
+            });
+        },
         type: "",
         value: ""
     }, initialState || {});
@@ -95,7 +104,7 @@ function createContext(options) {
         commandPain: createElement({ textContent: "--" }),
         commandStardate: createElement({ textContent: "--" }),
         commandStress: createElement({ textContent: "--" }),
-        dateInput: createElement({ value: "2026-06-04" }),
+        dateInput: createElement({ value: settings.dateValue === undefined ? "2026-06-04" : settings.dateValue }),
         energy: createElement({ value: "7" }),
         gratitude: createElement({ value: "Gratitude logged" }),
         health: createElement({ value: "Health progress" }),
@@ -144,8 +153,9 @@ function createContext(options) {
         priority3: createElement({ value: "Priority three" }),
         recentLogsList: createElement(),
         recordingStatus: createElement({ textContent: "Not recording" }),
+        saveCaptainLogButton: createElement(),
         startVoiceCaptureButton: createElement(),
-        stardateInput: createElement({ value: "260604.01" }),
+        stardateInput: createElement({ value: settings.stardateValue === undefined ? "260604.01" : settings.stardateValue }),
         stopVoiceCaptureButton: createElement(),
         stress: createElement({ value: "3" }),
         voiceCapture: createElement({ value: "Voice note" }),
@@ -178,6 +188,9 @@ function createContext(options) {
             revokeObjectURL() {}
         },
         URLSearchParams,
+        Event: function Event(type) {
+            this.type = type;
+        },
         alert() {
             throw new Error("Unexpected alert call");
         },
@@ -249,13 +262,17 @@ function assert(condition, message) {
 async function testLogHistoryAndBackup() {
     const app = createContext();
 
-    app.context.generateLog();
-    app.context.saveCommandDeckStatus();
+    app.context.saveCaptainLog();
 
     const history = JSON.parse(app.store["usstjr-captains-log-history"]);
     assert(history.length === 1, "Expected one history entry after save.");
     assert(history[0].markdown.includes("Win logged"), "History markdown should include log content.");
+    assert(app.fields.markdownOutput.value.includes("Win logged"), "One-click save should generate markdown output.");
     assert(app.fields.appStatus.textContent.includes("saved"), "Save should update in-page status.");
+
+    app.context.saveCaptainLog();
+    assert(JSON.parse(app.store["usstjr-captains-log-history"]).length === 1, "Repeated one-click save should update the same log, not duplicate it.");
+    assert(app.store["usstjr-stardate-260604"] === "2", "Repeated one-click save should not advance the stardate counter again.");
 
     app.context.exportBackup();
     const backup = JSON.parse(app.downloads[0].parts[0]);
@@ -270,8 +287,7 @@ async function testLogHistoryAndBackup() {
 async function testCommandDeckSync() {
     const app = createContext();
 
-    app.context.generateLog();
-    app.context.saveCommandDeckStatus();
+    app.context.saveCaptainLog();
 
     assert(app.fields.commandStardate.textContent === "260604.01", "Save should sync Command Deck stardate.");
     assert(app.fields.commandMood.textContent === "8", "Save should sync Command Deck mood.");
@@ -294,7 +310,7 @@ async function testCommandDeckSync() {
     assert(restored.fields.commandMood.textContent === "--", "Deleting only log should reset Command Deck mood.");
     assert(restored.fields.latestEntryStardate.textContent === "No entry recorded yet", "Deleting only log should reset latest entry.");
 
-    app.context.saveCommandDeckStatus();
+    app.context.saveCaptainLog();
     await app.context.clearLogHistory();
     assert(app.fields.commandEnergy.textContent === "--", "Clearing history should reset Command Deck energy.");
     assert(app.fields.latestStress.textContent === "--", "Clearing history should reset latest stress.");
@@ -303,8 +319,7 @@ async function testCommandDeckSync() {
 async function testHistoryControls() {
     const app = createContext();
 
-    app.context.generateLog();
-    app.context.saveCommandDeckStatus();
+    app.context.saveCaptainLog();
     const entry = JSON.parse(app.store["usstjr-captains-log-history"])[0];
 
     app.context.downloadHistoryEntry(entry.id);
@@ -313,7 +328,7 @@ async function testHistoryControls() {
     await app.context.deleteHistoryEntry(entry.id);
     assert(JSON.parse(app.store["usstjr-captains-log-history"]).length === 0, "Delete should remove history entry.");
 
-    app.context.saveCommandDeckStatus();
+    app.context.saveCaptainLog();
     await app.context.clearLogHistory();
     assert(JSON.parse(app.store["usstjr-captains-log-history"]).length === 0, "Clear history should empty history.");
     assert(app.fields.latestEntryStardate.textContent === "No entry recorded yet", "Clear history should reset latest UI.");
@@ -329,7 +344,7 @@ async function testDownloadAndResetWorkflows() {
     assert(app.downloads[0].parts[0].includes("Win logged"), "Generated markdown download should include log content.");
     assert(app.appendedElements[0].download === "2026-06-04-Stardate-260604.01.md", "Generated markdown download filename should include date and stardate.");
 
-    app.context.saveCommandDeckStatus();
+    app.context.saveCaptainLog();
     const entry = JSON.parse(app.store["usstjr-captains-log-history"])[0];
 
     app.context.downloadHistoryEntry(entry.id);
@@ -358,6 +373,70 @@ async function testDownloadAndResetWorkflows() {
     await canceled.context.clearDraftAndResetForm();
     assert(canceled.store["usstjr-captains-log-draft"], "Canceled reset should keep saved draft.");
     assert(canceled.fields.wins.value === "Win logged", "Canceled reset should keep form fields.");
+}
+
+async function testStardateAutomation() {
+    const empty = createContext({
+        stardateValue: ""
+    });
+
+    empty.context.setTodayDefaults();
+    assert(empty.fields.stardateInput.value === "260604.01", "Empty stardate should populate from current date.");
+
+    empty.context.setupStardateAutomation();
+    empty.fields.stardateInput.value = "260604.01";
+    empty.fields.dateInput.value = "2026-06-05";
+    empty.fields.dateInput.dispatchEvent(new empty.context.Event("change"));
+    assert(empty.fields.stardateInput.value === "260605.01", "Date change should recalculate existing stardate.");
+
+    const multiple = createContext({
+        stardateValue: ""
+    });
+
+    multiple.context.setTodayDefaults();
+    assert(multiple.fields.stardateInput.value === "260604.01", "First log should use .01.");
+    multiple.context.saveCaptainLog();
+
+    multiple.fields.stardateInput.value = "";
+    multiple.context.recalculateStardateForSelectedDate({
+        force: true
+    });
+    assert(multiple.fields.stardateInput.value === "260604.02", "Second new log on same date should use .02.");
+    multiple.context.saveCaptainLog();
+    assert(multiple.store["usstjr-stardate-260604"] === "3", "Counter should advance after second save.");
+
+    const original = createContext();
+    original.context.saveCaptainLog();
+    const entry = JSON.parse(original.store["usstjr-captains-log-history"])[0];
+    const restored = createContext({
+        search: `?log=${encodeURIComponent(entry.id)}`,
+        stardateValue: "",
+        dateValue: ""
+    });
+
+    Object.assign(restored.store, original.store);
+    const counterBeforeRestore = restored.store["usstjr-stardate-260604"];
+    restored.context.loadHistoryEntryFromUrl();
+    assert(restored.fields.stardateInput.value === "260604.01", "Loading saved log should preserve stardate.");
+    assert(restored.store["usstjr-stardate-260604"] === counterBeforeRestore, "Loading saved log should not advance counter.");
+
+    const draft = createContext({
+        stardateValue: "",
+        dateValue: ""
+    });
+    draft.store["usstjr-captains-log-draft"] = JSON.stringify({
+        stardateInput: "260604.09",
+        dateInput: "2026-06-04",
+        wins: "Draft wins"
+    });
+    draft.context.setTodayDefaults();
+    draft.context.loadDraft();
+    assert(draft.fields.stardateInput.value === "260604.09", "Draft stardate should be preserved.");
+
+    const reset = createContext();
+    reset.context.saveCaptainLog();
+    await reset.context.clearDraftAndResetForm();
+    assert(reset.fields.stardateInput.value === "260604.02", "Reset should generate next stardate for today.");
 }
 
 async function testMedicalBayCoreTracking() {
@@ -398,8 +477,7 @@ async function testMedicalBayCoreTracking() {
 function testHistorySearch() {
     const app = createContext();
 
-    app.context.generateLog();
-    app.context.saveCommandDeckStatus();
+    app.context.saveCaptainLog();
 
     app.fields.historySearchInput.value = "Win logged";
     app.context.renderRecentLogsToCommandDeck();
@@ -413,8 +491,7 @@ function testHistorySearch() {
 function testHistoryRestoreFromUrl() {
     const original = createContext();
 
-    original.context.generateLog();
-    original.context.saveCommandDeckStatus();
+    original.context.saveCaptainLog();
     const entry = JSON.parse(original.store["usstjr-captains-log-history"])[0];
     const restored = createContext({
         search: `?log=${encodeURIComponent(entry.id)}`
@@ -516,6 +593,7 @@ async function main() {
     await testCommandDeckSync();
     await testHistoryControls();
     await testDownloadAndResetWorkflows();
+    await testStardateAutomation();
     await testMedicalBayCoreTracking();
     testHistorySearch();
     testHistoryRestoreFromUrl();

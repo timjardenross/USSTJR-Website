@@ -20,7 +20,9 @@ async function expectNoPageErrors(page, action) {
 
 async function fillCaptainsLog(page, values = {}) {
     await page.goto("/captains-log.html");
-    await page.fill("#stardateInput", values.stardate || "260604.01");
+    if (values.stardate) {
+        await page.fill("#stardateInput", values.stardate);
+    }
     await page.fill("#dateInput", values.date || "2026-06-04");
     await page.fill("#mood", values.mood || "8");
     await page.fill("#energy", values.energy || "7");
@@ -40,9 +42,8 @@ async function fillCaptainsLog(page, values = {}) {
 
 async function saveCaptainsLog(page, values = {}) {
     await fillCaptainsLog(page, values);
-    await page.click("#generateLogButton");
+    await page.click("#saveCaptainLogButton");
     await expect(page.locator("#markdownOutput")).toHaveValue(new RegExp(values.wins || "E2E win logged"));
-    await page.click("#saveCommandDeckStatusButton");
     await expect(page.locator("#appStatus")).toContainText("saved");
 }
 
@@ -92,6 +93,10 @@ test("Command Deck loads correctly", async ({ page }) => {
 });
 
 test("Captain's Log core workflow updates Command Deck", async ({ page }) => {
+    await page.goto("/captains-log.html");
+    await expect(page.locator("#saveCaptainLogButton")).toHaveText("Save Captain's Log");
+    await expect(page.locator("#generateLogButton")).toHaveText("Preview Markdown");
+
     await saveCaptainsLog(page, {
         mood: "9",
         energy: "6",
@@ -108,6 +113,42 @@ test("Captain's Log core workflow updates Command Deck", async ({ page }) => {
     await expect(page.locator("#latestEnergy")).toHaveText("6");
     await expect(page.locator("#latestPain")).toHaveText("4");
     await expect(page.locator("#latestStress")).toHaveText("2");
+});
+
+test("Captain's Log auto-calculates and increments stardates", async ({ page }) => {
+    await page.goto("/captains-log.html");
+    await expect(page.locator("#stardateInput")).toHaveValue(/^\d{6}\.\d{2}$/);
+
+    await page.fill("#stardateInput", "");
+    await page.fill("#dateInput", "2026-06-05");
+    await expect(page.locator("#stardateInput")).toHaveValue("260605.01");
+
+    await saveCaptainsLog(page, {
+        date: "2026-06-04",
+        mood: "8",
+        energy: "7",
+        pain: "2",
+        stress: "3",
+        wins: "First stardate e2e"
+    });
+    await expect(page.locator("#stardateInput")).toHaveValue("260604.01");
+
+    await page.fill("#stardateInput", "");
+    await page.fill("#dateInput", "2026-06-04");
+    await expect(page.locator("#stardateInput")).toHaveValue("260604.02");
+    await saveCaptainsLog(page, {
+        date: "2026-06-04",
+        mood: "8",
+        energy: "7",
+        pain: "2",
+        stress: "3",
+        wins: "Second stardate e2e"
+    });
+    await expect(page.locator("#stardateInput")).toHaveValue("260604.02");
+
+    await page.click("#resetFormButton");
+    await page.click("#confirmModalConfirmButton");
+    await expect(page.locator("#stardateInput")).toHaveValue(/^\d{6}\.\d{2}$/);
 });
 
 test("Captain's Log reset confirmation preserves or clears draft", async ({ page }) => {
@@ -205,7 +246,7 @@ test("Browser module load smoke test", async ({ page }) => {
         {
             heading: "Captain's Log",
             path: "/captains-log.html",
-            selector: "#generateLogButton"
+            selector: "#saveCaptainLogButton"
         },
         {
             heading: "Medical Bay",

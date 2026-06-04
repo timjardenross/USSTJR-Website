@@ -22,14 +22,20 @@ const requiredFiles = [
     "js/modules/confirm-modal.js",
     "package.json",
     "playwright.config.js",
+    "playwright.production.config.js",
     "README.md",
     "BACKLOG.md",
     "MEDICAL_BAY_SCOPE.md",
     ".gitignore",
+    ".github/workflows/static-checks.yml",
+    ".github/workflows/production-deploy.yml",
+    "docs/deployment.md",
     "scripts/run-checks.js",
     "scripts/behavior-check.js",
+    "scripts/prepare-pages-artifact.js",
     "scripts/static-server.js",
-    "tests/usstjr.spec.js"
+    "tests/usstjr.spec.js",
+    "tests/production-smoke.spec.js"
 ];
 
 function readFile(filePath) {
@@ -65,7 +71,12 @@ const voiceCaptureJs = readFile("js/modules/voice-capture.js");
 const confirmModalJs = readFile("js/modules/confirm-modal.js");
 const packageJson = JSON.parse(readFile("package.json"));
 const playwrightConfigJs = readFile("playwright.config.js");
+const productionPlaywrightConfigJs = readFile("playwright.production.config.js");
 const e2eSpecJs = readFile("tests/usstjr.spec.js");
+const productionSmokeSpecJs = readFile("tests/production-smoke.spec.js");
+const validationWorkflowYml = readFile(".github/workflows/static-checks.yml");
+const productionDeployWorkflowYml = readFile(".github/workflows/production-deploy.yml");
+const deploymentDocs = readFile("docs/deployment.md");
 
 [indexHtml, captainsLogHtml, medicalBayHtml].forEach(function (html) {
     assert(!/\son[a-z]+="/i.test(html), "Inline event handlers are not allowed.");
@@ -97,8 +108,8 @@ const e2eSpecJs = readFile("tests/usstjr.spec.js");
     "startVoiceCaptureButton",
     "stopVoiceCaptureButton",
     "voiceCaptureSupportMessage",
+    "saveCaptainLogButton",
     "generateLogButton",
-    "saveCommandDeckStatusButton",
     "copyLogButton",
     "downloadLogButton",
     "resetFormButton",
@@ -141,14 +152,24 @@ const e2eSpecJs = readFile("tests/usstjr.spec.js");
 assert(appJs.trim() === 'import "./main.js";', "Legacy app.js should only be a compatibility shim.");
 assert(!Object.prototype.hasOwnProperty.call(packageJson, "type"), "package.json must not force CommonJS scripts into ESM mode.");
 assert(packageJson.scripts.check === "node scripts/run-checks.js", "Missing package check script.");
+assert(packageJson.scripts["test:prod"] === "playwright test --config=playwright.production.config.js", "Missing production smoke test script.");
 assert(packageJson.scripts["test:e2e"] === "playwright test", "Missing Playwright E2E script.");
 assert(packageJson.devDependencies["@playwright/test"], "Missing @playwright/test dev dependency.");
 assert(playwrightConfigJs.includes("scripts/static-server.js"), "Playwright config must use the static server.");
 assert(playwrightConfigJs.includes("127.0.0.1:4173"), "Playwright config must target local static server.");
+assert(playwrightConfigJs.includes('testMatch: "usstjr.spec.js"'), "Local Playwright config must exclude production smoke tests.");
+assert(productionPlaywrightConfigJs.includes("PRODUCTION_BASE_URL"), "Production Playwright config must use production base URL.");
 assert(e2eSpecJs.includes("Command Deck loads correctly"), "Missing Command Deck E2E test.");
 assert(e2eSpecJs.includes("Captain's Log core workflow"), "Missing Captain's Log E2E test.");
 assert(e2eSpecJs.includes("Medical Bay core workflow"), "Missing Medical Bay E2E test.");
 assert(e2eSpecJs.includes("Backup export and import"), "Missing backup E2E test.");
+assert(productionSmokeSpecJs.includes("production pages load without runtime errors"), "Missing production smoke test.");
+assert(validationWorkflowYml.includes("name: USS TJR Validation"), "Validation workflow must have a clear USS TJR name.");
+assert(productionDeployWorkflowYml.includes("name: USS TJR Production Deploy"), "Production deploy workflow must have a clear USS TJR name.");
+assert(productionDeployWorkflowYml.includes("needs: validation"), "Deployment must depend on validation.");
+assert(productionDeployWorkflowYml.includes("actions/deploy-pages"), "Production workflow must deploy through GitHub Pages.");
+assert(productionDeployWorkflowYml.includes("npm run test:prod"), "Production workflow must run production smoke tests.");
+assert(deploymentDocs.includes("Rollback"), "Deployment docs must include rollback instructions.");
 
 [
     [mainJs, "initialiseApp"],
@@ -157,14 +178,18 @@ assert(e2eSpecJs.includes("Backup export and import"), "Missing backup E2E test.
     [storageJs, "storageGetItem"],
     [storageJs, "storageSetJson"],
     [datesJs, "generateStardate"],
+    [datesJs, "generateNextStardateForDate"],
     [datesJs, "setTodayDefaults"],
     [statusJs, "showStatus"],
     [domJs, "bindClick"],
     [confirmModalJs, "confirmAction"],
     [commandDeckJs, "clearLogHistory"],
     [commandDeckJs, "renderRecentLogsToCommandDeck"],
+    [captainsLogJs, "saveCaptainLog"],
     [captainsLogJs, "generateLog"],
     [captainsLogJs, "saveCommandDeckStatus"],
+    [captainsLogJs, "setupStardateAutomation"],
+    [captainsLogJs, "recalculateStardateForSelectedDate"],
     [captainsLogJs, "loadHistoryEntryFromUrl"],
     [medicalBayJs, "saveMedicalBayLog"],
     [medicalBayJs, "renderMedicalHistory"],

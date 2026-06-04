@@ -3,7 +3,11 @@ import {
     CAPTAINS_LOG_FIELD_IDS,
     CAPTAINS_LOG_METRIC_FIELDS
 } from "../core/constants.js";
-import { advanceStardateCounter, setTodayDefaults } from "../core/dates.js";
+import {
+    advanceStardateCounter,
+    generateNextStardateForDate,
+    setTodayDefaults
+} from "../core/dates.js";
 import { downloadTextFile, getFieldValue, setFieldValue } from "../core/dom.js";
 import { showStatus } from "../core/status.js";
 import { storageGetJson, storageRemoveItem, storageSetJson } from "../core/storage.js";
@@ -17,6 +21,8 @@ import {
     saveLogHistoryEntry
 } from "./command-deck.js";
 import { confirmAction } from "./confirm-modal.js";
+
+let isLoadingSavedHistoryEntry = false;
 
 export function getDraftData() {
     const draft = {};
@@ -64,6 +70,42 @@ export function setupDraftAutosave() {
     });
 }
 
+export function setupStardateAutomation() {
+    const dateInput = document.getElementById("dateInput");
+
+    if (!dateInput) {
+        return;
+    }
+
+    dateInput.addEventListener("change", function () {
+        recalculateStardateForSelectedDate({
+            force: true
+        });
+    });
+}
+
+export function recalculateStardateForSelectedDate(options) {
+    const settings = options || {};
+    const stardateInput = document.getElementById("stardateInput");
+    const dateInput = document.getElementById("dateInput");
+
+    if (!stardateInput || !dateInput || isLoadingSavedHistoryEntry) {
+        return;
+    }
+
+    if (stardateInput.value && !settings.force) {
+        return;
+    }
+
+    stardateInput.value = generateNextStardateForDate(dateInput.value, getLogHistory().map(function (entry) {
+        return entry.stardate;
+    }));
+
+    if (settings.persist !== false) {
+        saveDraft();
+    }
+}
+
 export function clearDraft() {
     storageRemoveItem(CAPTAINS_LOG_DRAFT_KEY);
 }
@@ -78,6 +120,10 @@ export async function clearDraftAndResetForm() {
     clearDraft();
     resetFormFields();
     setTodayDefaults();
+    recalculateStardateForSelectedDate({
+        force: true,
+        persist: false
+    });
     showStatus("Captain's Log draft reset.", "success");
 }
 
@@ -207,13 +253,7 @@ export function validateMetricInputs() {
     return true;
 }
 
-export function saveCommandDeckStatus() {
-    if (!validateMetricInputs()) {
-        return;
-    }
-
-    const logData = getCaptainLogData();
-    const markdown = logData.markdownOutput || buildCaptainLogMarkdown(logData);
+function persistCaptainLog(logData, markdown) {
     const stardate = logData.stardateInput;
     const date = logData.dateInput;
     const latestEntry = getLatestEntry();
@@ -242,6 +282,29 @@ export function saveCommandDeckStatus() {
     }
 
     saveDraft();
+}
+
+export function saveCaptainLog() {
+    if (!validateMetricInputs()) {
+        return;
+    }
+
+    const logData = getCaptainLogData();
+    const markdown = buildCaptainLogMarkdown(logData);
+
+    persistCaptainLog(logData, markdown);
+    showStatus("Captain's Log saved.", "success");
+}
+
+export function saveCommandDeckStatus() {
+    if (!validateMetricInputs()) {
+        return;
+    }
+
+    const logData = getCaptainLogData();
+    const markdown = logData.markdownOutput || buildCaptainLogMarkdown(logData);
+
+    persistCaptainLog(logData, markdown);
     showStatus("Command Deck status and log history saved.", "success");
 }
 
@@ -320,13 +383,19 @@ export function loadHistoryEntryFromUrl() {
         return;
     }
 
-    CAPTAINS_LOG_FIELD_IDS.forEach(function (fieldId) {
-        const field = document.getElementById(fieldId);
+    isLoadingSavedHistoryEntry = true;
 
-        if (field && entry.fields[fieldId] !== undefined) {
-            field.value = entry.fields[fieldId];
-        }
-    });
+    try {
+        CAPTAINS_LOG_FIELD_IDS.forEach(function (fieldId) {
+            const field = document.getElementById(fieldId);
+
+            if (field && entry.fields[fieldId] !== undefined) {
+                field.value = entry.fields[fieldId];
+            }
+        });
+    } finally {
+        isLoadingSavedHistoryEntry = false;
+    }
 
     setMarkdownOutput(entry.markdown || "");
     showStatus("Saved Captain's Log loaded.", "success");

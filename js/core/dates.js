@@ -1,18 +1,59 @@
 import { storageGetItem, storageSetItem } from "./storage.js";
 
-export function generateStardate() {
-    const today = new Date();
+export function generateStardate(dateValue) {
+    const dateKey = getStardateDateKey(dateValue || getLocalDateInputValue(new Date()));
+    const counterKey = getStardateCounterKey(dateKey);
+    const counter = parseInt(storageGetItem(counterKey) || "1", 10);
 
+    return formatStardate(dateKey, counter);
+}
+
+export function generateNextStardateForDate(dateValue, existingStardates) {
+    const dateKey = getStardateDateKey(dateValue || getLocalDateInputValue(new Date()));
+    const counterKey = getStardateCounterKey(dateKey);
+    const storedCounter = parseInt(storageGetItem(counterKey) || "1", 10);
+    const historyCounter = getNextSequenceFromExistingStardates(dateKey, existingStardates || []);
+    const nextCounter = Math.max(storedCounter, historyCounter);
+
+    return formatStardate(dateKey, nextCounter);
+}
+
+export function getStardateDateKey(dateValue) {
+    const parts = String(dateValue || getLocalDateInputValue(new Date())).split("-");
+
+    if (parts.length === 3) {
+        return `${parts[0].slice(-2)}${parts[1].padStart(2, "0")}${parts[2].padStart(2, "0")}`;
+    }
+
+    const today = new Date();
     const year = String(today.getFullYear()).slice(-2);
     const month = String(today.getMonth() + 1).padStart(2, "0");
     const day = String(today.getDate()).padStart(2, "0");
 
-    const dateKey = `${year}${month}${day}`;
-    const counterKey = `usstjr-stardate-${dateKey}`;
+    return `${year}${month}${day}`;
+}
 
-    const counter = parseInt(storageGetItem(counterKey) || "1", 10);
+export function getStardateCounterKey(dateKey) {
+    return `usstjr-stardate-${dateKey}`;
+}
 
+export function formatStardate(dateKey, counter) {
     return `${dateKey}.${String(counter).padStart(2, "0")}`;
+}
+
+export function getNextSequenceFromExistingStardates(dateKey, stardates) {
+    const highestSequence = stardates.reduce(function (highest, stardate) {
+        const parts = String(stardate || "").split(".");
+
+        if (parts[0] !== dateKey) {
+            return highest;
+        }
+
+        const sequence = parseInt(parts[1] || "0", 10);
+        return Number.isFinite(sequence) ? Math.max(highest, sequence) : highest;
+    }, 0);
+
+    return highestSequence + 1;
 }
 
 export function getLocalDateInputValue(date) {
@@ -34,7 +75,7 @@ export function setTodayDefaults() {
     }
 
     if (stardateInput && !stardateInput.value) {
-        stardateInput.value = generateStardate();
+        stardateInput.value = generateStardate(dateInput ? dateInput.value : "");
     }
 }
 
@@ -53,8 +94,10 @@ export function advanceStardateCounter(stardate) {
         return;
     }
 
-    const counterKey = `usstjr-stardate-${dateKey}`;
+    const counterKey = getStardateCounterKey(dateKey);
     const currentCounter = parseInt(storageGetItem(counterKey) || "1", 10);
+    const stardateSequence = parseInt(stardate.split(".")[1] || "0", 10);
+    const nextCounter = Math.max(currentCounter + 1, stardateSequence + 1);
 
-    storageSetItem(counterKey, String(currentCounter + 1));
+    storageSetItem(counterKey, String(nextCounter));
 }

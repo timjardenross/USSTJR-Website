@@ -59,8 +59,8 @@ No build step or dependency install is required.
 1. Open `index.html` in a browser.
 2. Use **Start New Log** to open the Captain's Log page.
 3. Fill in the daily check-in fields.
-4. Select **Generate Markdown** to create the log output.
-5. Select **Save Status** to save the log to local history and update the Command Deck.
+4. Select **Save Captain's Log** to generate markdown, save the log to local history, and update the Command Deck.
+5. Select **Preview Markdown** when you want to review the markdown before saving.
 6. Select **Copy Markdown** or **Download Markdown** to keep a markdown copy.
 7. Use **Export Backup** on the Command Deck to download all local USS TJR data as JSON.
 8. Use a backup passphrase with **Export Encrypted** and **Import Encrypted** when you want a protected local backup file.
@@ -69,6 +69,8 @@ No build step or dependency install is required.
 11. Use **Open Medical Bay** to save daily health logs and download health intelligence summaries.
 
 For best voice capture support, use a browser that implements the Web Speech API, such as Chrome. Browser support varies, and microphone permissions may be required. When voice capture is unavailable, the transcript field remains available for manual entry.
+
+Captain's Log stardates are generated automatically in `YYMMDD.NN` format. Changing the log date recalculates the stardate for that date, and multiple logs on the same date increment the sequence number.
 
 ## Data Storage Model
 

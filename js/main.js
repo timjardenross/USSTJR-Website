@@ -12,9 +12,11 @@ import {
     generateLog,
     loadDraft,
     loadHistoryEntryFromUrl,
+    saveCaptainLog,
     saveCommandDeckStatus,
     saveDraft,
-    setupDraftAutosave
+    setupDraftAutosave,
+    setupStardateAutomation
 } from "./modules/captains-log.js";
 import {
     downloadMedicalBayLog,
@@ -48,6 +50,7 @@ export function initialiseApp() {
     setVoiceCaptureDraftSaver(saveDraft);
     setVoiceCaptureControlsState();
     setupDraftAutosave();
+    setupStardateAutomation();
     setupMedicalBayAutosave();
     loadLatestEntryToCommandDeck();
     renderRecentLogsToCommandDeck();
@@ -58,6 +61,7 @@ export function initialiseApp() {
 export function setupActionHandlers() {
     bindClick("startVoiceCaptureButton", startVoiceCapture);
     bindClick("stopVoiceCaptureButton", stopVoiceCapture);
+    bindClick("saveCaptainLogButton", saveCaptainLog);
     bindClick("generateLogButton", generateLog);
     bindClick("saveCommandDeckStatusButton", saveCommandDeckStatus);
     bindClick("copyLogButton", copyLog);

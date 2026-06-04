@@ -1,4 +1,4 @@
-name: Static checks
+name: USS TJR Validation
 
 on:
   pull_request:
