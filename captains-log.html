@@ -30,22 +30,22 @@
         <section class="dashboard-grid">
             <div class="metric-card">
                 <h3>Mood</h3>
-                <input type="number" id="mood" min="0" max="10" placeholder="0-10">
+                <input type="number" id="mood" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
             </div>
 
             <div class="metric-card">
                 <h3>Energy</h3>
-                <input type="number" id="energy" min="0" max="10" placeholder="0-10">
+                <input type="number" id="energy" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
             </div>
 
             <div class="metric-card">
                 <h3>Pain</h3>
-                <input type="number" id="pain" min="0" max="10" placeholder="0-10">
+                <input type="number" id="pain" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
             </div>
 
             <div class="metric-card">
                 <h3>Stress</h3>
-                <input type="number" id="stress" min="0" max="10" placeholder="0-10">
+                <input type="number" id="stress" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
             </div>
         </section>
         <p class="helper-text">Use 0-10 where 0 is lowest and 10 is highest.</p>
@@ -111,9 +111,10 @@
             <h2>Generate Log</h2>
 
             <button class="button" type="button" onclick="generateLog()">Generate Markdown</button>
+            <button class="button" type="button" onclick="saveCommandDeckStatus()">Save Status</button>
             <button class="button secondary-button" type="button" onclick="copyLog()">Copy Markdown</button>
-            <button class="button" type="button" onclick="downloadLog()">Download + Reset Form</button>
-            <button class="button secondary-button" type="button" onclick="clearDraftAndResetForm()">Clear Draft</button>
+            <button class="button" type="button" onclick="downloadLog()">Download Markdown</button>
+            <button class="button secondary-button" type="button" onclick="clearDraftAndResetForm()">Reset Form</button>
 
             <textarea id="markdownOutput" rows="20" readonly></textarea>
         </section>

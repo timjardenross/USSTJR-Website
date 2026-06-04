@@ -115,6 +115,10 @@ body {
     background: #ff9966;
 }
 
+.captain-log-panel .button {
+    margin: 4px;
+}
+
 .status-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -125,6 +129,32 @@ body {
     background: #222230;
     padding: 12px;
     border-radius: 12px;
+}
+
+.history-list {
+    display: grid;
+    gap: 12px;
+}
+
+.history-entry {
+    background: #222230;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.history-entry h3 {
+    color: #ffcc66;
+    font-size: 1rem;
+    margin: 0 0 6px;
+}
+
+.history-entry p {
+    margin: 0 0 8px;
+}
+
+.compact-button {
+    padding: 10px 16px;
+    font-size: 0.85rem;
 }
 
 .footer {

@@ -1,5 +1,7 @@
 const CAPTAINS_LOG_DRAFT_KEY = "usstjr-captains-log-draft";
 const LATEST_CAPTAINS_LOG_KEY = "usstjr-latest-captains-log";
+const CAPTAINS_LOG_HISTORY_KEY = "usstjr-captains-log-history";
+const CAPTAINS_LOG_HISTORY_LIMIT = 20;
 
 const CAPTAINS_LOG_FIELD_IDS = [
     "stardateInput",
@@ -20,6 +22,25 @@ const CAPTAINS_LOG_FIELD_IDS = [
     "priority3",
     "voiceCapture",
     "markdownOutput"
+];
+
+const CAPTAINS_LOG_METRIC_FIELDS = [
+    {
+        id: "mood",
+        label: "Mood"
+    },
+    {
+        id: "energy",
+        label: "Energy"
+    },
+    {
+        id: "pain",
+        label: "Pain"
+    },
+    {
+        id: "stress",
+        label: "Stress"
+    }
 ];
 
 let voiceRecognition = null;
@@ -48,6 +69,14 @@ function generateStardate() {
     return `${dateKey}.${String(counter).padStart(2, "0")}`;
 }
 
+function getLocalDateInputValue(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
 function setTodayDefaults() {
     const today = new Date();
 
@@ -55,7 +84,7 @@ function setTodayDefaults() {
     const stardateInput = document.getElementById("stardateInput");
 
     if (dateInput && !dateInput.value) {
-        dateInput.value = today.toISOString().split("T")[0];
+        dateInput.value = getLocalDateInputValue(today);
     }
 
     if (stardateInput && !stardateInput.value) {
@@ -68,8 +97,10 @@ window.addEventListener("DOMContentLoaded", initialiseCaptainsLogPage);
 function initialiseCaptainsLogPage() {
     setTodayDefaults();
     loadDraft();
+    loadHistoryEntryFromUrl();
     setupDraftAutosave();
     loadLatestEntryToCommandDeck();
+    renderRecentLogsToCommandDeck();
 }
 
 function getDraftData() {
@@ -152,100 +183,168 @@ function resetFormFields() {
 }
 
 function generateLog() {
-    const stardate = getFieldValue("stardateInput");
-    const date = getFieldValue("dateInput");
-
-    const mood = getFieldValue("mood");
-    const energy = getFieldValue("energy");
-    const pain = getFieldValue("pain");
-    const stress = getFieldValue("stress");
-
-    const wins = getFieldValue("wins");
-    const challenges = getFieldValue("challenges");
-    const lessons = getFieldValue("lessons");
-    const gratitude = getFieldValue("gratitude");
-
-    const health = getFieldValue("health");
-    const career = getFieldValue("career");
-    const mindbody = getFieldValue("mindbody");
-    const voiceCapture = getFieldValue("voiceCapture");
-
-    const priority1 = getFieldValue("priority1");
-    const priority2 = getFieldValue("priority2");
-    const priority3 = getFieldValue("priority3");
-
-    const markdown = `# Stardate ${stardate}
-
-Date: ${date}
-
-## Status
-
-Mood: ${mood}
-Energy: ${energy}
-Pain: ${pain}
-Stress: ${stress}
-
-## Today's Wins
-
-${wins}
-
-## Challenges
-
-${challenges}
-
-## Lessons Learned
-
-${lessons}
-
-## Gratitude
-
-${gratitude}
-
-## Mission Progress
-
-### Health
-
-${health}
-
-### Career
-
-${career}
-
-### TJR Mind Body
-
-${mindbody}
-
-## Raw Voice Reflection
-
-${voiceCapture}
-
-## Tomorrow's Priorities
-
-1. ${priority1}
-2. ${priority2}
-3. ${priority3}
-`;
-
-    const markdownOutput = document.getElementById("markdownOutput");
-
-    if (markdownOutput) {
-        markdownOutput.value = markdown;
+    if (!validateMetricInputs()) {
+        return;
     }
 
+    setMarkdownOutput(buildCaptainLogMarkdown(getCaptainLogData()));
     saveDraft();
-    saveLatestEntry({
-        stardate: stardate,
-        date: date,
-        mood: mood,
-        energy: energy,
-        pain: pain,
-        stress: stress
-    });
 }
 
 function getFieldValue(fieldId) {
     const field = document.getElementById(fieldId);
     return field ? field.value : "";
+}
+
+function setFieldValue(fieldId, value) {
+    const field = document.getElementById(fieldId);
+
+    if (field) {
+        field.value = value || "";
+    }
+}
+
+function getCaptainLogData() {
+    return {
+        stardateInput: getFieldValue("stardateInput"),
+        dateInput: getFieldValue("dateInput"),
+        mood: getFieldValue("mood"),
+        energy: getFieldValue("energy"),
+        pain: getFieldValue("pain"),
+        stress: getFieldValue("stress"),
+        wins: getFieldValue("wins"),
+        challenges: getFieldValue("challenges"),
+        lessons: getFieldValue("lessons"),
+        gratitude: getFieldValue("gratitude"),
+        health: getFieldValue("health"),
+        career: getFieldValue("career"),
+        mindbody: getFieldValue("mindbody"),
+        priority1: getFieldValue("priority1"),
+        priority2: getFieldValue("priority2"),
+        priority3: getFieldValue("priority3"),
+        voiceCapture: getFieldValue("voiceCapture"),
+        markdownOutput: getFieldValue("markdownOutput")
+    };
+}
+
+function buildCaptainLogMarkdown(data) {
+    return `# Stardate ${data.stardateInput}
+
+Date: ${data.dateInput}
+
+## Status
+
+Mood: ${data.mood}
+Energy: ${data.energy}
+Pain: ${data.pain}
+Stress: ${data.stress}
+
+## Today's Wins
+
+${data.wins}
+
+## Challenges
+
+${data.challenges}
+
+## Lessons Learned
+
+${data.lessons}
+
+## Gratitude
+
+${data.gratitude}
+
+## Mission Progress
+
+### Health
+
+${data.health}
+
+### Career
+
+${data.career}
+
+### TJR Mind Body
+
+${data.mindbody}
+
+## Raw Voice Reflection
+
+${data.voiceCapture}
+
+## Tomorrow's Priorities
+
+1. ${data.priority1}
+2. ${data.priority2}
+3. ${data.priority3}
+`;
+}
+
+function setMarkdownOutput(markdown) {
+    const markdownOutput = document.getElementById("markdownOutput");
+
+    if (markdownOutput) {
+        markdownOutput.value = markdown;
+    }
+}
+
+function validateMetricInputs() {
+    for (let i = 0; i < CAPTAINS_LOG_METRIC_FIELDS.length; i++) {
+        const metric = CAPTAINS_LOG_METRIC_FIELDS[i];
+        const field = document.getElementById(metric.id);
+
+        if (!field) {
+            continue;
+        }
+
+        const value = field.value.trim();
+        const numericValue = Number(value);
+
+        if (value === "" || !Number.isFinite(numericValue) || numericValue < 0 || numericValue > 10) {
+            alert(`${metric.label} must be a number from 0 to 10.`);
+            field.focus();
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function saveCommandDeckStatus() {
+    if (!validateMetricInputs()) {
+        return;
+    }
+
+    const logData = getCaptainLogData();
+    const markdown = logData.markdownOutput || buildCaptainLogMarkdown(logData);
+    const stardate = logData.stardateInput;
+    const date = logData.dateInput;
+    const latestEntry = getLatestEntry();
+    const historyEntryExists = getLogHistory().some(function (entry) {
+        return entry.id === createLogHistoryEntryId(stardate, date);
+    });
+
+    setMarkdownOutput(markdown);
+    logData.markdownOutput = markdown;
+
+    saveLatestEntry({
+        stardate: stardate,
+        date: date,
+        mood: logData.mood,
+        energy: logData.energy,
+        pain: logData.pain,
+        stress: logData.stress
+    });
+
+    saveLogHistoryEntry(logData, markdown);
+
+    if ((!latestEntry || latestEntry.stardate !== stardate) && !historyEntryExists) {
+        advanceStardateCounter(stardate);
+    }
+
+    saveDraft();
+    alert("Command Deck status and log history saved.");
 }
 
 function copyLog() {
@@ -276,17 +375,14 @@ function downloadLog() {
         return;
     }
 
+    if (!validateMetricInputs()) {
+        return;
+    }
+
     const stardate = getFieldValue("stardateInput");
     const date = getFieldValue("dateInput");
 
     const filename = `${date}-Stardate-${stardate}.md`;
-
-    const dateKey = stardate.split(".")[0];
-    const counterKey = `usstjr-stardate-${dateKey}`;
-
-    const currentCounter = parseInt(localStorage.getItem(counterKey) || "1", 10);
-    localStorage.setItem(counterKey, String(currentCounter + 1));
-    clearDraft();
 
     const blob = new Blob([markdown], {
         type: "text/markdown"
@@ -302,9 +398,6 @@ function downloadLog() {
     document.body.removeChild(link);
 
     URL.revokeObjectURL(link.href);
-
-    resetFormFields();
-    setTodayDefaults();
 }
 
 function startVoiceCapture() {
@@ -378,31 +471,186 @@ function saveLatestEntry(entry) {
     localStorage.setItem(LATEST_CAPTAINS_LOG_KEY, JSON.stringify(entry));
 }
 
-function loadLatestEntryToCommandDeck() {
-    const savedEntry = localStorage.getItem(LATEST_CAPTAINS_LOG_KEY);
+function getLogHistory() {
+    const savedHistory = localStorage.getItem(CAPTAINS_LOG_HISTORY_KEY);
 
-    if (!savedEntry) {
-        return;
+    if (!savedHistory) {
+        return [];
     }
 
     try {
-        const entry = JSON.parse(savedEntry);
-
-        setTextContent("commandStardate", entry.stardate || "--");
-        setTextContent("commandMood", entry.mood || "--");
-        setTextContent("commandEnergy", entry.energy || "--");
-        setTextContent("commandPain", entry.pain || "--");
-        setTextContent("commandStress", entry.stress || "--");
-
-        setTextContent("latestEntryStardate", entry.stardate || "No entry recorded yet");
-        setTextContent("latestMood", entry.mood || "--");
-        setTextContent("latestEnergy", entry.energy || "--");
-        setTextContent("latestPain", entry.pain || "--");
-        setTextContent("latestStress", entry.stress || "--");
+        const history = JSON.parse(savedHistory);
+        return Array.isArray(history) ? history : [];
     } catch (error) {
-        console.error("Unable to load latest Captain's Log entry:", error);
-        localStorage.removeItem(LATEST_CAPTAINS_LOG_KEY);
+        console.error("Unable to read Captain's Log history:", error);
+        localStorage.removeItem(CAPTAINS_LOG_HISTORY_KEY);
+        return [];
     }
+}
+
+function saveLogHistory(history) {
+    localStorage.setItem(CAPTAINS_LOG_HISTORY_KEY, JSON.stringify(history));
+}
+
+function saveLogHistoryEntry(logData, markdown) {
+    const now = new Date().toISOString();
+    const entryId = createLogHistoryEntryId(logData.stardateInput, logData.dateInput);
+    const history = getLogHistory();
+    const existingEntry = history.find(function (entry) {
+        return entry.id === entryId;
+    });
+
+    const nextEntry = {
+        id: entryId,
+        stardate: logData.stardateInput,
+        date: logData.dateInput,
+        mood: logData.mood,
+        energy: logData.energy,
+        pain: logData.pain,
+        stress: logData.stress,
+        fields: logData,
+        markdown: markdown,
+        createdAt: existingEntry ? existingEntry.createdAt : now,
+        updatedAt: now
+    };
+
+    const nextHistory = history
+        .filter(function (entry) {
+            return entry.id !== entryId;
+        })
+        .concat(nextEntry)
+        .sort(function (a, b) {
+            return String(b.updatedAt).localeCompare(String(a.updatedAt));
+        })
+        .slice(0, CAPTAINS_LOG_HISTORY_LIMIT);
+
+    saveLogHistory(nextHistory);
+}
+
+function createLogHistoryEntryId(stardate, date) {
+    return `${date || "undated"}-${stardate || "unstardated"}`
+        .toLowerCase()
+        .replace(/[^a-z0-9.-]+/g, "-");
+}
+
+function getLatestEntry() {
+    const savedEntry = localStorage.getItem(LATEST_CAPTAINS_LOG_KEY);
+
+    if (!savedEntry) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(savedEntry);
+    } catch (error) {
+        console.error("Unable to read latest Captain's Log entry:", error);
+        localStorage.removeItem(LATEST_CAPTAINS_LOG_KEY);
+        return null;
+    }
+}
+
+function advanceStardateCounter(stardate) {
+    const dateKey = stardate.split(".")[0];
+
+    if (!dateKey) {
+        return;
+    }
+
+    const counterKey = `usstjr-stardate-${dateKey}`;
+    const currentCounter = parseInt(localStorage.getItem(counterKey) || "1", 10);
+
+    localStorage.setItem(counterKey, String(currentCounter + 1));
+}
+
+function loadLatestEntryToCommandDeck() {
+    const entry = getLatestEntry();
+
+    if (!entry) {
+        return;
+    }
+
+    setTextContent("commandStardate", entry.stardate || "--");
+    setTextContent("commandMood", entry.mood || "--");
+    setTextContent("commandEnergy", entry.energy || "--");
+    setTextContent("commandPain", entry.pain || "--");
+    setTextContent("commandStress", entry.stress || "--");
+
+    setTextContent("latestEntryStardate", entry.stardate || "No entry recorded yet");
+    setTextContent("latestMood", entry.mood || "--");
+    setTextContent("latestEnergy", entry.energy || "--");
+    setTextContent("latestPain", entry.pain || "--");
+    setTextContent("latestStress", entry.stress || "--");
+}
+
+function renderRecentLogsToCommandDeck() {
+    const recentLogsList = document.getElementById("recentLogsList");
+
+    if (!recentLogsList) {
+        return;
+    }
+
+    const history = getLogHistory();
+    recentLogsList.textContent = "";
+
+    if (history.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.textContent = "No saved logs yet.";
+        recentLogsList.appendChild(emptyMessage);
+        return;
+    }
+
+    history.slice(0, 5).forEach(function (entry) {
+        const item = document.createElement("article");
+        const title = document.createElement("h3");
+        const meta = document.createElement("p");
+        const metrics = document.createElement("p");
+        const restoreLink = document.createElement("a");
+
+        item.className = "history-entry";
+        title.textContent = `Stardate ${entry.stardate || "--"}`;
+        meta.textContent = entry.date || "No date recorded";
+        metrics.textContent = `Mood ${entry.mood || "--"} · Energy ${entry.energy || "--"} · Pain ${entry.pain || "--"} · Stress ${entry.stress || "--"}`;
+        restoreLink.className = "button secondary-button compact-button";
+        restoreLink.href = `captains-log.html?log=${encodeURIComponent(entry.id)}`;
+        restoreLink.textContent = "Open Log";
+
+        item.appendChild(title);
+        item.appendChild(meta);
+        item.appendChild(metrics);
+        item.appendChild(restoreLink);
+        recentLogsList.appendChild(item);
+    });
+}
+
+function loadHistoryEntryFromUrl() {
+    const stardateInput = document.getElementById("stardateInput");
+
+    if (!stardateInput) {
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const logId = params.get("log");
+
+    if (!logId) {
+        return;
+    }
+
+    const entry = getLogHistory().find(function (historyEntry) {
+        return historyEntry.id === logId;
+    });
+
+    if (!entry || !entry.fields) {
+        alert("Unable to load that Captain's Log entry.");
+        return;
+    }
+
+    CAPTAINS_LOG_FIELD_IDS.forEach(function (fieldId) {
+        setFieldValue(fieldId, entry.fields[fieldId]);
+    });
+
+    setMarkdownOutput(entry.markdown || entry.fields.markdownOutput || "");
+    saveDraft();
 }
 
 function setTextContent(elementId, value) {
