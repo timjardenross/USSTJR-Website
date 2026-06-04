@@ -16,16 +16,31 @@
         <p class="subtitle">Personal Resilience Operating System</p>
     </header>
 
+    <nav class="nav-bar" aria-label="Site navigation">
+        <a href="index.html" class="active">Command Deck</a>
+        <a href="captains-log.html">Captain's Log</a>
+        <a href="medical-bay.html">Medical Bay</a>
+        <button
+          id="usstjr-voice-btn"
+          class="usstjr-voice-btn"
+          onclick="USSTJR.VoiceCommands.toggle()"
+          aria-label="Toggle Voice Commands"
+          title="Say 'Computer' followed by a command"
+        >
+          <span class="usstjr-voice-btn__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8"  y1="23" x2="16" y2="23"/>
+            </svg>
+          </span>
+          <span class="usstjr-voice-btn__label" id="usstjr-voice-btn-label">VOICE COMMANDS</span>
+        </button>
+    </nav>
+
     <main id="mainContent" class="container">
         <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
-
-<<<<<<< HEAD
-=======
-    <main class="container">
-    <main id="mainContent" class="container">
-        <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
-
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
         <div id="confirmModal" class="modal-backdrop" hidden>
             <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
                 <h2 id="confirmModalTitle">Confirm Action</h2>
@@ -98,18 +113,6 @@
             <input id="importEncryptedBackupInput" class="visually-hidden" type="file" accept="application/json,.json">
         </section>
 
-<<<<<<< HEAD
-        <section class="card" aria-labelledby="settingsHeading">
-            <h2 id="settingsHeading">Settings</h2>
-            <div class="settings-row">
-                <label for="voiceOutputToggle" class="settings-label">Voice Output</label>
-                <input id="voiceOutputToggle" type="checkbox" role="switch" aria-describedby="voiceOutputHelp">
-                <p id="voiceOutputHelp" class="helper-text">When enabled, USS TJR speaks status updates and confirmations using your browser's speech synthesis.</p>
-            </div>
-        </section>
-
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
         <section class="two-column-grid">
             <div class="card">
                 <h2>Current Missions</h2>
@@ -172,11 +175,47 @@
         <p>USS TJR v1.0 · Command Deck Online</p>
     </footer>
 
-<<<<<<< HEAD
     <script src="js/voice-system.js"></script>
     <script src="js/voice-indicator.js"></script>
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
+    <script src="js/voice-commands.js"></script>
+
+    <script>
+      window.addEventListener('load', () => {
+        USSTJR.Voice.speak(USSTJR.Voice.phrases.online);
+      });
+    </script>
+
+    <script>
+      (function () {
+        const btn   = document.getElementById('usstjr-voice-btn');
+        const label = document.getElementById('usstjr-voice-btn-label');
+
+        if (!btn || !label) return;
+
+        USSTJR.VoiceCommands.on('activated',   () => {
+          btn.classList.add('active');
+          label.textContent = 'VOICE ACTIVE';
+        });
+
+        USSTJR.VoiceCommands.on('deactivated', () => {
+          btn.classList.remove('active');
+          label.textContent = 'VOICE COMMANDS';
+        });
+
+        USSTJR.VoiceCommands.on('awake', () => {
+          label.textContent = 'LISTENING...';
+        });
+
+        USSTJR.VoiceCommands.on('standby', () => {
+          label.textContent = 'VOICE ACTIVE';
+        });
+
+        USSTJR.VoiceCommands.on('command', () => {
+          label.textContent = 'VOICE ACTIVE';
+        });
+      })();
+    </script>
+
     <script type="module" src="js/main.js"></script>
 
 </body>

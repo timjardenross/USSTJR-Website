@@ -403,5 +403,104 @@ textarea {
     width: 100%;
     margin: 0;
 }
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
+
+/* ─────────────────────────────────────── */
+/* USS TJR Voice Command Button            */
+/* ─────────────────────────────────────── */
+
+.usstjr-voice-btn {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              8px;
+  padding:          8px 16px;
+  background:       transparent;
+  border:           1px solid rgba(91, 200, 245, 0.4);
+  border-left:      3px solid #5bc8f5;
+  border-radius:    4px;
+  color:            #5bc8f5;
+  font-family:      'Courier New', 'Lucida Console', monospace;
+  font-size:        11px;
+  letter-spacing:   0.15em;
+  text-transform:   uppercase;
+  cursor:           pointer;
+  transition:       all 0.2s ease;
+  position:         relative;
+  overflow:         hidden;
+}
+
+.usstjr-voice-btn:hover {
+  background:       rgba(91, 200, 245, 0.08);
+  border-color:     rgba(91, 200, 245, 0.8);
+}
+
+.usstjr-voice-btn:active {
+  transform:        scale(0.97);
+}
+
+/* Active / listening state */
+.usstjr-voice-btn.active {
+  border-left-color: #f5a623;
+  color:             #f5a623;
+  background:        rgba(245, 166, 35, 0.08);
+  border-color:      rgba(245, 166, 35, 0.4);
+  animation:         usstjr-btn-pulse 2s ease-in-out infinite;
+}
+
+@keyframes usstjr-btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0); }
+  50%       { box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.15); }
+}
+
+.usstjr-voice-btn__icon {
+  display:    flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.usstjr-voice-btn__label {
+  white-space: nowrap;
+}
+
+/* Navigation bar styling */
+.nav-bar {
+  display:          flex;
+  align-items:      center;
+  justify-content:  space-between;
+  background:       #0d0d14;
+  padding:          12px 20px;
+  border-bottom:    1px solid #333;
+  gap:              16px;
+  flex-wrap:        wrap;
+}
+
+.nav-bar a {
+  color:            #5bc8f5;
+  text-decoration:  none;
+  font-size:        0.9rem;
+  font-weight:      bold;
+  padding:          8px 12px;
+  border-radius:    4px;
+  transition:       all 0.2s ease;
+}
+
+.nav-bar a:hover {
+  background:       rgba(91, 200, 245, 0.1);
+  color:            #ffffff;
+}
+
+.nav-bar a.active {
+  border-bottom:    2px solid #f5a623;
+  color:            #ffffff;
+}
+
+@media (max-width: 768px) {
+  .nav-bar {
+    flex-direction:  column;
+    align-items:     flex-start;
+  }
+
+  .usstjr-voice-btn {
+    width:           100%;
+    justify-content: center;
+  }
+}

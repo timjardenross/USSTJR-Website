@@ -39,10 +39,6 @@ import {
     startVoiceCapture,
     stopVoiceCapture
 } from "./modules/voice-capture.js";
-<<<<<<< HEAD
-import { setupVoiceToggle, voicePhrases, voiceSpeak } from "./modules/voice.js";
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
 
 export function initialiseApp() {
     setTodayDefaults();
@@ -60,26 +56,6 @@ export function initialiseApp() {
     renderRecentLogsToCommandDeck();
     loadLatestMedicalEntry();
     renderMedicalHistory();
-<<<<<<< HEAD
-    setupVoiceToggle();
-    speakPageGreeting();
-}
-
-function speakPageGreeting() {
-    const phrases = voicePhrases();
-    const isCommandDeck = Boolean(document.getElementById("commandStardate"));
-    const isCaptainsLog = Boolean(document.getElementById("stardateInput"));
-    const isMedicalBay = Boolean(document.getElementById("healthDateInput"));
-
-    if (isCommandDeck) {
-        voiceSpeak(phrases.online);
-    } else if (isCaptainsLog) {
-        voiceSpeak(phrases.logReady);
-    } else if (isMedicalBay) {
-        voiceSpeak(phrases.medicalBay);
-    }
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
 }
 
 export function setupActionHandlers() {
@@ -114,5 +90,11 @@ export function setupActionHandlers() {
         historySearchInput.addEventListener("input", renderRecentLogsToCommandDeck);
     }
 }
+
+// Expose functions globally for inline scripts (e.g., voice command action registration)
+window.startVoiceCapture = startVoiceCapture;
+window.stopVoiceCapture = stopVoiceCapture;
+window.downloadLog = downloadLog;
+window.clearDraftAndResetForm = clearDraftAndResetForm;
 
 window.addEventListener("DOMContentLoaded", initialiseApp);
