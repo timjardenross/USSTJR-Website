@@ -10,11 +10,18 @@ async function clearStorage(page) {
 
 async function expectNoPageErrors(page, action) {
     const errors = [];
-    page.on("pageerror", function (error) {
+    const errorHandler = function (error) {
         errors.push(error.message);
-    });
+    };
 
-    await action();
+    page.on("pageerror", errorHandler);
+
+    try {
+        await action();
+    } finally {
+        page.off("pageerror", errorHandler);
+    }
+
     expect(errors).toEqual([]);
 }
 

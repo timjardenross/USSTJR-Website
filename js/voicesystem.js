@@ -10,7 +10,8 @@
  *   USSTJR.Voice.speak(USSTJR.Voice.phrases.online);
  */
 
-const USSTJR = window.USSTJR || {};
+window.USSTJR = window.USSTJR || {};
+const USSTJR = window.USSTJR;
 
 USSTJR.Voice = (() => {
 
