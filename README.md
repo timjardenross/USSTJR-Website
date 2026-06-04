@@ -1,26 +1,44 @@
-# USSTJR Website
+# USS TJR
 
-USS TJR is a static personal resilience operating system website. The current app provides a Command Deck dashboard, a Captain's Log workflow, and a Medical Bay MVP for daily health tracking.
+USS TJR is a static personal resilience operating system. It provides a Command Deck dashboard, a Captain's Log for daily wellness logging, and a Medical Bay for health tracking. All data is stored locally in the browser — no server, no account, no external dependencies.
 
 ## Current Structure
 
 ```text
 USSTJR-Website/
 ├── .github/
+│   ├── copilot-instructions.md
 │   └── workflows/
-│       └── static-checks.yml
+│       ├── static-checks.yml
+│       └── production-deploy.yml
 ├── scripts/
 │   ├── behavior-check.js
+│   ├── prepare-pages-artifact.js
 │   ├── run-checks.js
+│   ├── static-check.js
 │   ├── static-server.js
-│   └── static-check.js
+│   └── (run-checks.js runs all checks and Playwright)
 ├── tests/
-│   └── usstjr.spec.js
+│   ├── usstjr.spec.js
+│   └── production-smoke.spec.js
+├── docs/
+│   ├── architecture.md
+│   ├── data-model.md
+│   ├── deployment.md
+│   ├── roadmap.md
+│   ├── runbook.md
+│   ├── testing.md
+│   └── features/
+│       ├── backup-restore.md
+│       ├── captains-log.md
+│       ├── command-deck.md
+│       └── medical-bay.md
 ├── .gitignore
 ├── BACKLOG.md
 ├── MEDICAL_BAY_SCOPE.md
 ├── package.json
 ├── playwright.config.js
+├── playwright.production.config.js
 ├── index.html
 ├── captains-log.html
 ├── medical-bay.html
@@ -46,9 +64,9 @@ USSTJR-Website/
 
 ## Pages
 
-- `index.html` is the Command Deck. It shows mission status, current modules, current focus areas, and the latest saved Captain's Log status metrics.
-- `captains-log.html` is the daily log form. It captures status metrics, written reflections, voice transcript text, tomorrow's priorities, and generated markdown.
-- `medical-bay.html` is the Medical Bay MVP. It captures pain, mood, sleep, energy, and daily health notes, then generates a health intelligence markdown summary.
+- `index.html` is the Command Deck. It shows mission status, current modules, current focus areas, the latest saved Captain's Log metrics, and backup management controls.
+- `captains-log.html` is the Captain's Log. It captures wellness metrics, written reflections, voice transcript text, tomorrow's priorities, and generates downloadable markdown.
+- `medical-bay.html` is the Medical Bay. It captures pain, mood, sleep, energy, CPAP compliance data, and daily health notes, then generates a health intelligence markdown summary.
 
 The browser entry point is `js/main.js`, loaded with native ES modules. `js/app.js` is kept only as a compatibility shim.
 
@@ -124,13 +142,24 @@ The expected production entry point is `index.html`.
 
 Core app behavior should work in modern desktop and mobile browsers with JavaScript enabled. Voice capture depends on the Web Speech API and is not guaranteed across all browsers.
 
+## Documentation
+
+Full documentation is in `docs/`:
+
+- [Architecture](docs/architecture.md) — system design, module map, and CI pipeline
+- [Data Model](docs/data-model.md) — storage keys, schemas, and backup format
+- [Testing](docs/testing.md) — all test layers with troubleshooting
+- [Deployment](docs/deployment.md) — GitHub Pages pipeline and rollback
+- [Roadmap](docs/roadmap.md) — completed and planned milestones
+- [Runbook](docs/runbook.md) — operational procedures for maintenance
+- [Features](docs/features/) — per-feature guides for Command Deck, Captain's Log, Medical Bay, and Backup & Restore
+
 ## Development Notes
 
-- Keep the site usable without a build step until there is a clear reason to introduce one.
-- Treat `localStorage` as temporary convenience storage, not durable archival storage.
-- Prefer small, focused changes while the app is still a compact static prototype.
-- If the app grows beyond a few pages or needs tests, introduce a minimal toolchain deliberately.
-- Keep behavior coverage focused on critical workflows before large refactors.
+- No build step. The site runs directly from source files.
+- Treat `localStorage` as temporary convenience storage, not durable archival storage. Users are responsible for exporting backups.
+- Make small, focused changes. Run `npm test` before every commit.
+- Engineering standards for AI assistants are in `.github/copilot-instructions.md`.
 
 ## Known Follow-Up Work
 
