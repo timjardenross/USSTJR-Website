@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "check": "node scripts/run-checks.js",
+    "deploy:prepare": "node scripts/prepare-pages-artifact.js",
+    "test:prod": "playwright test --config=playwright.production.config.js",
+    "test:e2e": "playwright test",
+    "test": "node scripts/run-checks.js && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest"
+  }
+}
