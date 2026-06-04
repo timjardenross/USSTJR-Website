@@ -20,6 +20,7 @@
 - Add Playwright E2E coverage for Command Deck, Captain's Log, Medical Bay, backup/restore, confirmation modal, and ES module browser loading.
 - Add Captain's Log stardate auto-calculation with date-based sequencing, draft preservation, history preservation, and reset regeneration.
 - Add one-click Captain's Log save that generates markdown, saves history, syncs Command Deck metrics, and preserves stardate sequencing.
+- Add CPAP compliance monitoring for myAir score, usage, mask seal, AHI, mask-off count, trends, status, compliance, and backup support.
 
 ## Next Backlog Items
 

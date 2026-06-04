@@ -66,6 +66,13 @@ export const MEDICAL_BAY_FIELD_IDS = [
     "healthTriggers",
     "healthWins",
     "healthChallenges",
+    "cpapDateInput",
+    "cpapScore",
+    "cpapUsageTime",
+    "cpapMaskSeal",
+    "cpapEventsPerHour",
+    "cpapMaskOffCount",
+    "cpapNotes",
     "medicalSummaryOutput"
 ];
 

@@ -145,6 +145,21 @@ function createContext(options) {
         medicalLatestSleep: createElement({ textContent: "--" }),
         medicalLatestStress: createElement({ textContent: "--" }),
         medicalSummaryOutput: createElement(),
+        cpapAverageAhi: createElement({ textContent: "--" }),
+        cpapAverageScore: createElement({ textContent: "--" }),
+        cpapAverageUsage: createElement({ textContent: "--" }),
+        cpapCompliance: createElement({ textContent: "--" }),
+        cpapDateInput: createElement({ value: "2026-06-04" }),
+        cpapEventsPerHour: createElement({ value: "1.1" }),
+        cpapLatestAhi: createElement({ textContent: "--" }),
+        cpapLatestScore: createElement({ textContent: "--" }),
+        cpapLatestStatus: createElement({ textContent: "--" }),
+        cpapLatestUsage: createElement({ textContent: "--" }),
+        cpapMaskOffCount: createElement({ value: "0" }),
+        cpapMaskSeal: createElement({ value: "20" }),
+        cpapNotes: createElement({ value: "Mask fit stable" }),
+        cpapScore: createElement({ value: "94" }),
+        cpapUsageTime: createElement({ value: "07:42" }),
         mindbody: createElement({ value: "Mind body progress" }),
         mood: createElement({ value: "8" }),
         pain: createElement({ value: "2" }),
@@ -448,9 +463,12 @@ async function testMedicalBayCoreTracking() {
     assert(history.length === 1, "Medical Bay save should create a history entry.");
     assert(history[0].overallPain === "5", "Medical Bay history should store overall pain.");
     assert(history[0].painTypes.includes("Nerve"), "Medical Bay history should store selected pain types.");
+    assert(history[0].cpap.score === 94, "Medical Bay history should store CPAP score.");
+    assert(history[0].cpap.usageMinutes === 462, "Medical Bay history should store CPAP usage as minutes.");
     assert(app.fields.medicalLatestDate.textContent === "2026-06-04", "Medical Bay latest date should update.");
     assert(app.fields.medicalLatestPain.textContent === "5", "Medical Bay latest pain should update.");
     assert(app.fields.medicalSummaryOutput.value.includes("Health Intelligence"), "Medical Bay save should generate markdown.");
+    assert(app.fields.medicalSummaryOutput.value.includes("CPAP Summary"), "Medical Bay summary should include CPAP summary.");
     assert(app.fields.medicalSummaryOutput.value.includes("Long sitting block"), "Medical Bay summary should include triggers.");
 
     app.context.downloadMedicalBayLog();
@@ -460,18 +478,56 @@ async function testMedicalBayCoreTracking() {
 
     const backup = app.context.buildBackup();
     assert(backup.medicalBay.history.length === 1, "Backup should include Medical Bay history.");
+    assert(backup.medicalBay.history[0].cpap.score === 94, "Backup should include CPAP data.");
     assert(backup.medicalBay.draft.healthTriggers === "Long sitting block", "Backup should include Medical Bay draft.");
+    assert(backup.medicalBay.draft.cpapUsageTime === "07:42", "Backup should include CPAP draft data.");
 
     const restored = createContext();
     await restored.context.restoreBackup(backup);
     assert(JSON.parse(restored.store["usstjr-medical-bay-history"]).length === 1, "Restore should write Medical Bay history.");
     assert(restored.fields.medicalLatestEnergy.textContent === "6", "Restore should sync Medical Bay latest energy.");
+    assert(restored.fields.cpapLatestScore.textContent === "94", "Restore should sync latest CPAP score.");
 
     await app.context.resetMedicalBayForm();
     assert(!app.store["usstjr-medical-bay-draft"], "Medical Bay reset should clear draft.");
     assert(app.fields.healthTriggers.value === "", "Medical Bay reset should clear notes.");
     assert(app.fields.healthPainTypeNerve.checked === false, "Medical Bay reset should clear pain type checkboxes.");
     assert(app.fields.appStatus.textContent.includes("reset"), "Medical Bay reset should update status.");
+}
+
+function testCpapComplianceMonitoring() {
+    const app = createContext();
+
+    app.context.saveMedicalBayLog();
+    assert(app.fields.cpapLatestScore.textContent === "94", "CPAP dashboard should show latest score.");
+    assert(app.fields.cpapLatestUsage.textContent === "7h 42m", "CPAP dashboard should show latest usage.");
+    assert(app.fields.cpapLatestAhi.textContent === "1.1", "CPAP dashboard should show latest AHI.");
+    assert(app.fields.cpapLatestStatus.textContent === "🟢 Excellent", "CPAP dashboard should show latest status.");
+    assert(app.fields.cpapAverageScore.textContent === "94.0", "CPAP dashboard should show average score.");
+    assert(app.fields.cpapAverageUsage.textContent === "7h 42m", "CPAP dashboard should show average usage.");
+    assert(app.fields.cpapCompliance.textContent === "100% (1/1)", "CPAP dashboard should show compliance percentage.");
+    assert(app.context.parseCpapUsageTime("07:42") === 462, "CPAP usage parser should convert HH:MM to minutes.");
+    assert(app.context.formatCpapUsage(462) === "7h 42m", "CPAP formatter should display minutes as hours and minutes.");
+    assert(app.context.getCpapStatus(84) === "🟡 Good", "CPAP status should classify good scores.");
+    assert(app.context.getCpapStatus(74) === "🟠 Fair", "CPAP status should classify fair scores.");
+    assert(app.context.getCpapStatus(69) === "🔴 Poor", "CPAP status should classify poor scores.");
+
+    const cpapEntries = [
+        { date: "2026-06-07", score: 94, usageMinutes: 462, maskSeal: 20, eventsPerHour: 1.1, maskOffCount: 0, notes: "" },
+        { date: "2026-06-06", score: 84, usageMinutes: 240, maskSeal: 18, eventsPerHour: 2.0, maskOffCount: 1, notes: "" },
+        { date: "2026-06-05", score: 74, usageMinutes: 239, maskSeal: 16, eventsPerHour: 3.4, maskOffCount: 2, notes: "" },
+        { date: "2026-06-04", score: 69, usageMinutes: 300, maskSeal: 14, eventsPerHour: 5.2, maskOffCount: 2, notes: "" },
+        { date: "2026-06-03", score: 90, usageMinutes: 420, maskSeal: 20, eventsPerHour: 0.8, maskOffCount: 0, notes: "" },
+        { date: "2026-06-02", score: 80, usageMinutes: 180, maskSeal: 17, eventsPerHour: 2.5, maskOffCount: 1, notes: "" },
+        { date: "2026-06-01", score: 70, usageMinutes: 360, maskSeal: 15, eventsPerHour: 4.0, maskOffCount: 2, notes: "" }
+    ];
+    const summary = app.context.buildCpapTrendSummary(cpapEntries);
+
+    assert(summary.averageScore === "80.1", "CPAP average score should calculate across seven entries.");
+    assert(summary.averageUsage === "5h 14m", "CPAP average usage should calculate across seven entries.");
+    assert(summary.averageEventsPerHour === "2.7", "CPAP average AHI should calculate across seven entries.");
+    assert(summary.compliance.percent === "71%", "CPAP compliance percentage should calculate from compliant nights.");
+    assert(summary.compliance.compliantNights === 5, "CPAP compliance should count nights with at least four hours.");
 }
 
 function testHistorySearch() {
@@ -506,6 +562,27 @@ function testInvalidBackupRejected() {
     const app = createContext();
 
     assert(!app.context.isValidBackup({ version: 1, logHistory: [{ id: 123 }] }), "Invalid backup should fail validation.");
+    assert(!app.context.isValidBackup({
+        version: 1,
+        logHistory: [],
+        medicalBay: {
+            history: [{
+                id: "medical-2026-06-04",
+                date: "2026-06-04",
+                painTypes: [],
+                cpap: {
+                    date: "2026-06-04",
+                    score: "94",
+                    usageMinutes: 462,
+                    maskSeal: 20,
+                    eventsPerHour: 1.1,
+                    maskOffCount: 0,
+                    notes: ""
+                },
+                updatedAt: "2026-06-04T00:00:00.000Z"
+            }]
+        }
+    }), "Invalid CPAP backup data should fail validation.");
 }
 
 function testVoiceCaptureStates() {
@@ -595,6 +672,7 @@ async function main() {
     await testDownloadAndResetWorkflows();
     await testStardateAutomation();
     await testMedicalBayCoreTracking();
+    testCpapComplianceMonitoring();
     testHistorySearch();
     testHistoryRestoreFromUrl();
     testInvalidBackupRejected();

@@ -80,10 +80,16 @@ export function setTodayDefaults() {
 }
 
 export function setMedicalBayDefaults() {
+    const today = getLocalDateInputValue(new Date());
     const dateInput = document.getElementById("healthDateInput");
+    const cpapDateInput = document.getElementById("cpapDateInput");
 
     if (dateInput && !dateInput.value) {
-        dateInput.value = getLocalDateInputValue(new Date());
+        dateInput.value = today;
+    }
+
+    if (cpapDateInput && !cpapDateInput.value) {
+        cpapDateInput.value = today;
     }
 }
 

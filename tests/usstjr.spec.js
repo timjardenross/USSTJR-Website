@@ -68,6 +68,13 @@ async function fillMedicalBay(page, values = {}) {
     await page.fill("#healthTriggers", values.triggers || "Long sitting block");
     await page.fill("#healthWins", values.wins || "Completed physio");
     await page.fill("#healthChallenges", values.challenges || "Pain flare after sitting");
+    await page.fill("#cpapDateInput", values.cpapDate || values.date || "2026-06-04");
+    await page.fill("#cpapScore", values.cpapScore || "94");
+    await page.fill("#cpapUsageTime", values.cpapUsageTime || "07:42");
+    await page.fill("#cpapMaskSeal", values.cpapMaskSeal || "20");
+    await page.fill("#cpapEventsPerHour", values.cpapEventsPerHour || "1.1");
+    await page.fill("#cpapMaskOffCount", values.cpapMaskOffCount || "0");
+    await page.fill("#cpapNotes", values.cpapNotes || "Mask fit stable");
 }
 
 async function saveMedicalBayLog(page, values = {}) {
@@ -173,15 +180,27 @@ test("Medical Bay core workflow saves health intelligence", async ({ page }) => 
         sleepHours: "6.5",
         energy: "6",
         stress: "3",
-        triggers: "E2E long sitting trigger"
+        triggers: "E2E long sitting trigger",
+        cpapScore: "94",
+        cpapUsageTime: "07:42",
+        cpapEventsPerHour: "1.1"
     });
 
     await expect(page.locator("#medicalSummaryOutput")).toHaveValue(/E2E long sitting trigger/);
+    await expect(page.locator("#medicalSummaryOutput")).toHaveValue(/CPAP Summary/);
     await expect(page.locator("#medicalHistoryList")).toContainText("2026-06-04");
     await expect(page.locator("#medicalLatestPain")).toHaveText("5");
     await expect(page.locator("#medicalLatestSleep")).toHaveText("6.5");
     await expect(page.locator("#medicalLatestEnergy")).toHaveText("6");
     await expect(page.locator("#medicalLatestStress")).toHaveText("3");
+    await expect(page.locator("#cpapLatestScore")).toHaveText("94");
+    await expect(page.locator("#cpapLatestUsage")).toHaveText("7h 42m");
+    await expect(page.locator("#cpapLatestAhi")).toHaveText("1.1");
+    await expect(page.locator("#cpapLatestStatus")).toContainText("Excellent");
+    await expect(page.locator("#cpapAverageScore")).toHaveText("94.0");
+    await expect(page.locator("#cpapAverageUsage")).toHaveText("7h 42m");
+    await expect(page.locator("#cpapAverageAhi")).toHaveText("1.1");
+    await expect(page.locator("#cpapCompliance")).toHaveText("100% (1/1)");
 });
 
 test("Medical Bay reset confirmation preserves or clears draft", async ({ page }) => {
@@ -196,6 +215,7 @@ test("Medical Bay reset confirmation preserves or clears draft", async ({ page }
     await page.click("#resetMedicalLogButton");
     await page.click("#confirmModalConfirmButton");
     await expect(page.locator("#healthTriggers")).toHaveValue("");
+    await expect(page.locator("#cpapScore")).toHaveValue("");
 });
 
 test("Backup export and import include Captain's Log and Medical Bay data", async ({ page }, testInfo) => {
@@ -219,7 +239,10 @@ test("Backup export and import include Captain's Log and Medical Bay data", asyn
     expect(backup.draft.wins).toBe("E2E backup captain win");
     expect(Array.isArray(backup.medicalBay.history)).toBe(true);
     expect(backup.medicalBay.history[0].triggers).toBe("E2E backup health trigger");
+    expect(backup.medicalBay.history[0].cpap.score).toBe(94);
+    expect(backup.medicalBay.history[0].cpap.usageMinutes).toBe(462);
     expect(backup.medicalBay.draft.healthTriggers).toBe("E2E backup health trigger");
+    expect(backup.medicalBay.draft.cpapUsageTime).toBe("07:42");
 
     const importPath = testInfo.outputPath("usstjr-backup.json");
     await fs.writeFile(importPath, JSON.stringify(backup, null, 2));
@@ -234,6 +257,8 @@ test("Backup export and import include Captain's Log and Medical Bay data", asyn
     await page.goto("/medical-bay.html");
     await expect(page.locator("#medicalLatestPain")).toHaveText("5");
     await expect(page.locator("#medicalHistoryList")).toContainText("2026-06-04");
+    await expect(page.locator("#cpapLatestScore")).toHaveText("94");
+    await expect(page.locator("#cpapCompliance")).toHaveText("100% (1/1)");
 });
 
 test("Browser module load smoke test", async ({ page }) => {

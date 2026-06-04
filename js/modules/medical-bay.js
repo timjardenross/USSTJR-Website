@@ -78,6 +78,8 @@ export async function resetMedicalBayForm() {
 }
 
 export function getMedicalBayData() {
+    const cpap = getCpapDataFromFields();
+
     return {
         date: getFieldValue("healthDateInput"),
         overallPain: getFieldValue("healthOverallPain"),
@@ -98,8 +100,90 @@ export function getMedicalBayData() {
         triggers: getFieldValue("healthTriggers"),
         wins: getFieldValue("healthWins"),
         challenges: getFieldValue("healthChallenges"),
+        cpap: cpap,
         summaryOutput: getFieldValue("medicalSummaryOutput")
     };
+}
+
+export function getCpapDataFromFields() {
+    const usageMinutes = parseCpapUsageTime(getFieldValue("cpapUsageTime"));
+
+    if (!hasCpapMetricInput()) {
+        return null;
+    }
+
+    return {
+        date: getFieldValue("cpapDateInput"),
+        score: Number(getFieldValue("cpapScore")),
+        usageMinutes: usageMinutes,
+        maskSeal: Number(getFieldValue("cpapMaskSeal")),
+        eventsPerHour: Number(getFieldValue("cpapEventsPerHour")),
+        maskOffCount: Number(getFieldValue("cpapMaskOffCount")),
+        notes: getFieldValue("cpapNotes")
+    };
+}
+
+export function hasCpapMetricInput() {
+    return [
+        "cpapScore",
+        "cpapUsageTime",
+        "cpapMaskSeal",
+        "cpapEventsPerHour",
+        "cpapMaskOffCount"
+    ].some(function (fieldId) {
+        return getFieldValue(fieldId).trim() !== "";
+    });
+}
+
+export function parseCpapUsageTime(value) {
+    const usage = String(value || "").trim();
+    const match = usage.match(/^(\d{1,2}):([0-5]\d)$/);
+
+    if (!match) {
+        return null;
+    }
+
+    return (Number(match[1]) * 60) + Number(match[2]);
+}
+
+export function formatCpapUsage(minutes) {
+    if (minutes === null || minutes === undefined || minutes === "") {
+        return "--";
+    }
+
+    const numericMinutes = Number(minutes);
+
+    if (!Number.isFinite(numericMinutes)) {
+        return "--";
+    }
+
+    const roundedMinutes = Math.round(numericMinutes);
+    const hours = Math.floor(roundedMinutes / 60);
+    const remainder = roundedMinutes % 60;
+
+    return `${hours}h ${String(remainder).padStart(2, "0")}m`;
+}
+
+export function getCpapStatus(score) {
+    const numericScore = Number(score);
+
+    if (!Number.isFinite(numericScore)) {
+        return "--";
+    }
+
+    if (numericScore >= 90) {
+        return "🟢 Excellent";
+    }
+
+    if (numericScore >= 80) {
+        return "🟡 Good";
+    }
+
+    if (numericScore >= 70) {
+        return "🟠 Fair";
+    }
+
+    return "🔴 Poor";
 }
 
 export function getSelectedMedicalPainTypes() {
@@ -120,6 +204,9 @@ export function setSelectedMedicalPainTypes(painTypes) {
 }
 
 export function buildMedicalBayMarkdown(data, trendSummary) {
+    const cpapEntries = getCpapEntriesForCurrentData(data);
+    const cpapCompliance = getCpapComplianceSummary(cpapEntries);
+
     return `# Medical Bay Health Log
 
 Date: ${data.date}
@@ -143,6 +230,17 @@ Stress: ${data.stress}
 Hours slept: ${data.sleepHours}
 Sleep quality: ${data.sleepQuality}
 Overnight wake-ups: ${data.wakeups}
+
+## CPAP Summary
+
+Latest Score: ${data.cpap ? data.cpap.score : "--"}
+Latest Usage: ${data.cpap ? formatCpapUsage(data.cpap.usageMinutes) : "--"}
+Latest AHI: ${data.cpap ? data.cpap.eventsPerHour : "--"}
+Mask Seal: ${data.cpap ? data.cpap.maskSeal : "--"}/20
+Mask Off Count: ${data.cpap ? data.cpap.maskOffCount : "--"}
+Compliance: ${cpapCompliance.percent}
+Status: ${data.cpap ? getCpapStatus(data.cpap.score) : "--"}
+Notes: ${data.cpap && data.cpap.notes ? data.cpap.notes : "Not recorded"}
 
 ## Energy
 
@@ -180,6 +278,7 @@ ${trendSummary}
 export function buildMedicalTrendSummary(data) {
     const history = getMedicalBayHistory();
     const recentEntries = history.slice(0, 7);
+    const cpapSummary = buildCpapTrendSummary(getCpapEntriesForCurrentData(data));
     const previousPainAverage = averageNumericValues(recentEntries.map(function (entry) {
         return entry.overallPain;
     }));
@@ -204,7 +303,28 @@ export function buildMedicalTrendSummary(data) {
         lines.push(`Watch trigger pattern: ${data.triggers}`);
     }
 
+    if (data.cpap) {
+        lines.push(`CPAP latest status is ${getCpapStatus(data.cpap.score)} with ${formatCpapUsage(data.cpap.usageMinutes)} usage and ${data.cpap.eventsPerHour} events/hr.`);
+    }
+
+    if (cpapSummary.totalNights > 0) {
+        lines.push(`CPAP 7-log averages: score ${cpapSummary.averageScore}, usage ${cpapSummary.averageUsage}, events/hr ${cpapSummary.averageEventsPerHour}.`);
+        lines.push(`CPAP 30-day compliance is ${cpapSummary.compliance.percent} (${cpapSummary.compliance.compliantNights} compliant nights from ${cpapSummary.compliance.totalNights}).`);
+    }
+
     return lines.join("\n");
+}
+
+export function getCpapEntriesForCurrentData(data) {
+    const historyEntries = getCpapEntries(getMedicalBayHistory());
+
+    if (!data.cpap) {
+        return historyEntries;
+    }
+
+    return [data.cpap].concat(historyEntries.filter(function (entry) {
+        return entry.date !== data.cpap.date;
+    }));
 }
 
 export function averageNumericValues(values) {
@@ -221,6 +341,85 @@ export function averageNumericValues(values) {
     }, 0);
 
     return (total / numericValues.length).toFixed(1);
+}
+
+export function getCpapEntries(history) {
+    return (history || []).map(function (entry) {
+        return entry.cpap || null;
+    }).filter(function (entry) {
+        return entry && entry.date && Number.isFinite(Number(entry.score));
+    }).sort(function (a, b) {
+        return String(b.date).localeCompare(String(a.date));
+    });
+}
+
+export function buildCpapTrendSummary(cpapEntries) {
+    const entries = cpapEntries || getCpapEntries(getMedicalBayHistory());
+    const recentSeven = entries.slice(0, 7);
+    const compliance = getCpapComplianceSummary(entries);
+
+    return {
+        latest: entries[0] || null,
+        averageScore: averageNumericValues(recentSeven.map(function (entry) {
+            return entry.score;
+        })) || "--",
+        averageUsageMinutes: averageNumericValues(recentSeven.map(function (entry) {
+            return entry.usageMinutes;
+        })),
+        averageUsage: formatCpapUsage(averageNumericValues(recentSeven.map(function (entry) {
+            return entry.usageMinutes;
+        }))),
+        averageEventsPerHour: averageNumericValues(recentSeven.map(function (entry) {
+            return entry.eventsPerHour;
+        })) || "--",
+        compliance: compliance,
+        totalNights: entries.length
+    };
+}
+
+export function getCpapComplianceSummary(cpapEntries) {
+    const entries = (cpapEntries || getCpapEntries(getMedicalBayHistory())).slice(0, 30);
+    const totalNights = entries.length;
+    const compliantNights = entries.filter(function (entry) {
+        return Number(entry.usageMinutes) >= 240;
+    }).length;
+    const percent = totalNights === 0 ? "--" : `${Math.round((compliantNights / totalNights) * 100)}%`;
+
+    return {
+        compliantNights: compliantNights,
+        totalNights: totalNights,
+        percent: percent
+    };
+}
+
+export function renderCpapDashboard() {
+    const summary = buildCpapTrendSummary();
+    const latest = summary.latest;
+
+    if (!document.getElementById("cpapLatestScore")) {
+        return;
+    }
+
+    if (!latest) {
+        setTextContent("cpapLatestScore", "--");
+        setTextContent("cpapLatestUsage", "--");
+        setTextContent("cpapLatestAhi", "--");
+        setTextContent("cpapLatestStatus", "--");
+        setTextContent("cpapAverageScore", "--");
+        setTextContent("cpapAverageUsage", "--");
+        setTextContent("cpapAverageAhi", "--");
+        setTextContent("cpapCompliance", "--");
+        return;
+    }
+
+    setTextContent("cpapLatestScore", String(latest.score));
+    setTextContent("cpapLatestUsage", formatCpapUsage(latest.usageMinutes));
+    setTextContent("cpapLatestAhi", String(latest.eventsPerHour));
+    setTextContent("cpapLatestStatus", getCpapStatus(latest.score));
+    setTextContent("cpapAverageScore", summary.averageScore);
+    setTextContent("cpapAverageUsage", summary.averageUsage);
+    setTextContent("cpapAverageAhi", summary.averageEventsPerHour);
+    setTextContent("cpapCompliance", `${summary.compliance.percent} (${summary.compliance.compliantNights}/${summary.compliance.totalNights})`);
 }
 
 export function validateMedicalBayInputs() {
@@ -253,6 +452,77 @@ export function validateMedicalBayInputs() {
     if (wakeups && wakeups.value.trim() !== "" && Number(wakeups.value) < 0) {
         showStatus("Overnight wake-ups must be 0 or higher.", "error");
         wakeups.focus();
+        return false;
+    }
+
+    if (!validateCpapInputs()) {
+        return false;
+    }
+
+    return true;
+}
+
+export function validateCpapInputs() {
+    if (!hasCpapMetricInput()) {
+        return true;
+    }
+
+    const date = document.getElementById("cpapDateInput");
+    const score = document.getElementById("cpapScore");
+    const usage = document.getElementById("cpapUsageTime");
+    const maskSeal = document.getElementById("cpapMaskSeal");
+    const eventsPerHour = document.getElementById("cpapEventsPerHour");
+    const maskOffCount = document.getElementById("cpapMaskOffCount");
+
+    if (!date || date.value.trim() === "") {
+        showStatus("CPAP date is required.", "error");
+        if (date) {
+            date.focus();
+        }
+        return false;
+    }
+
+    if (!validateNumberField(score, "myAir Score", 0, 100)) {
+        return false;
+    }
+
+    if (!usage || parseCpapUsageTime(usage.value) === null) {
+        showStatus("CPAP usage time must use HH:MM format.", "error");
+        if (usage) {
+            usage.focus();
+        }
+        return false;
+    }
+
+    if (!validateNumberField(maskSeal, "Mask seal rating", 0, 20)) {
+        return false;
+    }
+
+    if (!validateNumberField(eventsPerHour, "Events per hour", 0, null)) {
+        return false;
+    }
+
+    if (!validateNumberField(maskOffCount, "Mask off count", 0, null)) {
+        return false;
+    }
+
+    return true;
+}
+
+export function validateNumberField(field, label, min, max) {
+    if (!field || field.value.trim() === "") {
+        showStatus(`${label} is required.`, "error");
+        if (field) {
+            field.focus();
+        }
+        return false;
+    }
+
+    const value = Number(field.value);
+
+    if (!Number.isFinite(value) || value < min || (max !== null && value > max)) {
+        showStatus(max === null ? `${label} must be ${min} or higher.` : `${label} must be between ${min} and ${max}.`, "error");
+        field.focus();
         return false;
     }
 
@@ -354,6 +624,7 @@ export function loadLatestMedicalEntry() {
         setTextContent("medicalLatestSleep", "--");
         setTextContent("medicalLatestEnergy", "--");
         setTextContent("medicalLatestStress", "--");
+        renderCpapDashboard();
         return;
     }
 
@@ -362,6 +633,7 @@ export function loadLatestMedicalEntry() {
     setTextContent("medicalLatestSleep", latestEntry.sleepHours || "--");
     setTextContent("medicalLatestEnergy", latestEntry.energy || "--");
     setTextContent("medicalLatestStress", latestEntry.stress || "--");
+    renderCpapDashboard();
 }
 
 export function renderMedicalHistory() {
@@ -389,7 +661,7 @@ export function renderMedicalHistory() {
 
         item.className = "history-entry";
         title.textContent = entry.date || "Undated health log";
-        metrics.textContent = `Pain ${entry.overallPain || "--"} · Sleep ${entry.sleepHours || "--"}h · Energy ${entry.energy || "--"} · Stress ${entry.stress || "--"}`;
+        metrics.textContent = `Pain ${entry.overallPain || "--"} · Sleep ${entry.sleepHours || "--"}h · Energy ${entry.energy || "--"} · Stress ${entry.stress || "--"} · CPAP ${entry.cpap ? `${entry.cpap.score} ${formatCpapUsage(entry.cpap.usageMinutes)}` : "--"}`;
         notes.textContent = entry.triggers ? `Triggers: ${entry.triggers}` : "No triggers recorded.";
 
         item.appendChild(title);

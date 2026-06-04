@@ -331,7 +331,19 @@ export function isValidMedicalBayEntry(entry) {
         && isStringValue(entry.id)
         && isStringValue(entry.date)
         && Array.isArray(entry.painTypes)
+        && (!entry.cpap || isValidCpapEntry(entry.cpap))
         && isStringValue(entry.updatedAt);
+}
+
+export function isValidCpapEntry(entry) {
+    return isPlainObject(entry)
+        && isStringValue(entry.date)
+        && isNumberValue(entry.score)
+        && isNumberValue(entry.usageMinutes)
+        && isNumberValue(entry.maskSeal)
+        && isNumberValue(entry.eventsPerHour)
+        && isNumberValue(entry.maskOffCount)
+        && isStringValue(entry.notes);
 }
 
 export function isPlainObject(value) {
@@ -340,6 +352,10 @@ export function isPlainObject(value) {
 
 export function isStringValue(value) {
     return typeof value === "string";
+}
+
+export function isNumberValue(value) {
+    return typeof value === "number" && Number.isFinite(value);
 }
 
 export function getStardateCounters() {
