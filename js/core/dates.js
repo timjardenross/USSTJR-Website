@@ -83,6 +83,7 @@ export function setMedicalBayDefaults() {
     const today = getLocalDateInputValue(new Date());
     const dateInput = document.getElementById("healthDateInput");
     const cpapDateInput = document.getElementById("cpapDateInput");
+    const weightDateInput = document.getElementById("weightDateInput");
 
     if (dateInput && !dateInput.value) {
         dateInput.value = today;
@@ -90,6 +91,10 @@ export function setMedicalBayDefaults() {
 
     if (cpapDateInput && !cpapDateInput.value) {
         cpapDateInput.value = today;
+    }
+
+    if (weightDateInput && !weightDateInput.value) {
+        weightDateInput.value = today;
     }
 }
 

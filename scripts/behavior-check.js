@@ -160,6 +160,18 @@ function createContext(options) {
         cpapNotes: createElement({ value: "Mask fit stable" }),
         cpapScore: createElement({ value: "94" }),
         cpapUsageTime: createElement({ value: "07:42" }),
+        weightCurrent: createElement({ textContent: "--" }),
+        weightDateInput: createElement({ value: "2026-06-04" }),
+        weightFourWeekTrend: createElement({ textContent: "--" }),
+        weightHighest: createElement({ textContent: "--" }),
+        weightKg: createElement({ value: "121.3" }),
+        weightLowest: createElement({ textContent: "--" }),
+        weightNotes: createElement({ value: "Week 2 on program" }),
+        weightOverallTrend: createElement({ textContent: "--" }),
+        weightTrendDirection: createElement({ textContent: "--" }),
+        weightTwelveWeekTrend: createElement({ textContent: "--" }),
+        weightWaistCm: createElement({ value: "118" }),
+        weightWeeklyChange: createElement({ textContent: "--" }),
         mindbody: createElement({ value: "Mind body progress" }),
         mood: createElement({ value: "8" }),
         pain: createElement({ value: "2" }),
@@ -465,10 +477,13 @@ async function testMedicalBayCoreTracking() {
     assert(history[0].painTypes.includes("Nerve"), "Medical Bay history should store selected pain types.");
     assert(history[0].cpap.score === 94, "Medical Bay history should store CPAP score.");
     assert(history[0].cpap.usageMinutes === 462, "Medical Bay history should store CPAP usage as minutes.");
+    assert(history[0].weight.weight === 121.3, "Medical Bay history should store weight entry.");
+    assert(history[0].weight.waist === 118, "Medical Bay history should store waist measurement.");
     assert(app.fields.medicalLatestDate.textContent === "2026-06-04", "Medical Bay latest date should update.");
     assert(app.fields.medicalLatestPain.textContent === "5", "Medical Bay latest pain should update.");
     assert(app.fields.medicalSummaryOutput.value.includes("Health Intelligence"), "Medical Bay save should generate markdown.");
     assert(app.fields.medicalSummaryOutput.value.includes("CPAP Summary"), "Medical Bay summary should include CPAP summary.");
+    assert(app.fields.medicalSummaryOutput.value.includes("Weight Summary"), "Medical Bay summary should include weight summary.");
     assert(app.fields.medicalSummaryOutput.value.includes("Long sitting block"), "Medical Bay summary should include triggers.");
 
     app.context.downloadMedicalBayLog();
@@ -479,19 +494,23 @@ async function testMedicalBayCoreTracking() {
     const backup = app.context.buildBackup();
     assert(backup.medicalBay.history.length === 1, "Backup should include Medical Bay history.");
     assert(backup.medicalBay.history[0].cpap.score === 94, "Backup should include CPAP data.");
+    assert(backup.medicalBay.history[0].weight.weight === 121.3, "Backup should include weight data.");
     assert(backup.medicalBay.draft.healthTriggers === "Long sitting block", "Backup should include Medical Bay draft.");
     assert(backup.medicalBay.draft.cpapUsageTime === "07:42", "Backup should include CPAP draft data.");
+    assert(backup.medicalBay.draft.weightKg === "121.3", "Backup should include weight draft data.");
 
     const restored = createContext();
     await restored.context.restoreBackup(backup);
     assert(JSON.parse(restored.store["usstjr-medical-bay-history"]).length === 1, "Restore should write Medical Bay history.");
     assert(restored.fields.medicalLatestEnergy.textContent === "6", "Restore should sync Medical Bay latest energy.");
     assert(restored.fields.cpapLatestScore.textContent === "94", "Restore should sync latest CPAP score.");
+    assert(restored.fields.weightCurrent.textContent === "121.3 kg", "Restore should sync current weight.");
 
     await app.context.resetMedicalBayForm();
     assert(!app.store["usstjr-medical-bay-draft"], "Medical Bay reset should clear draft.");
     assert(app.fields.healthTriggers.value === "", "Medical Bay reset should clear notes.");
     assert(app.fields.healthPainTypeNerve.checked === false, "Medical Bay reset should clear pain type checkboxes.");
+    assert(app.fields.weightKg.value === "", "Medical Bay reset should clear weight.");
     assert(app.fields.appStatus.textContent.includes("reset"), "Medical Bay reset should update status.");
 }
 
@@ -528,6 +547,39 @@ function testCpapComplianceMonitoring() {
     assert(summary.averageEventsPerHour === "2.7", "CPAP average AHI should calculate across seven entries.");
     assert(summary.compliance.percent === "71%", "CPAP compliance percentage should calculate from compliant nights.");
     assert(summary.compliance.compliantNights === 5, "CPAP compliance should count nights with at least four hours.");
+}
+
+function testWeightTrendTracking() {
+    const app = createContext();
+
+    app.context.saveMedicalBayLog();
+    assert(app.fields.weightCurrent.textContent === "121.3 kg", "Weight dashboard should show current weight.");
+    assert(app.fields.weightWeeklyChange.textContent === "--", "Single weight entry should not show weekly change.");
+    assert(app.fields.weightHighest.textContent === "121.3 kg", "Single weight entry should show highest weight.");
+    assert(app.fields.weightLowest.textContent === "121.3 kg", "Single weight entry should show lowest weight.");
+    assert(app.context.formatWeight(121.3) === "121.3 kg", "Weight formatter should include kilograms.");
+    assert(app.context.formatWeightChange(-0.8) === "-0.8 kg", "Weight change formatter should show decreases.");
+    assert(app.context.formatWeightChange(0.4) === "+0.4 kg", "Weight change formatter should show increases.");
+    assert(app.context.getWeightTrendDirection(0.4) === "Increasing", "Weight trend should classify increases.");
+    assert(app.context.getWeightTrendDirection(-0.8) === "Decreasing", "Weight trend should classify decreases.");
+    assert(app.context.getWeightTrendDirection(0.1) === "Stable", "Weight trend should classify small changes as stable.");
+
+    const weightEntries = [
+        { date: "2026-06-28", weight: 120.1, waist: 116, notes: "" },
+        { date: "2026-06-21", weight: 121.3, waist: 118, notes: "" },
+        { date: "2026-06-14", weight: 121.7, waist: 118.5, notes: "" },
+        { date: "2026-06-07", weight: 122.0, waist: 119, notes: "" },
+        { date: "2026-05-31", weight: 122.4, waist: 119.5, notes: "" }
+    ];
+    const summary = app.context.buildWeightTrendSummary(weightEntries);
+
+    assert(summary.weeklyChange === "-1.2 kg", "Weight weekly change should compare latest to previous entry.");
+    assert(summary.trendDirection === "Decreasing", "Weight trend direction should derive from weekly change.");
+    assert(summary.highest === "122.4 kg", "Weight highest value should calculate across entries.");
+    assert(summary.lowest === "120.1 kg", "Weight lowest value should calculate across entries.");
+    assert(summary.fourWeekTrend === "Decreasing (-1.9 kg)", "Weight 4-week trend should compare latest to fourth entry.");
+    assert(summary.twelveWeekTrend === "Decreasing (-2.3 kg)", "Weight 12-week trend should use available entries when fewer than 12 exist.");
+    assert(summary.overallTrend === "Decreasing (-2.3 kg)", "Weight overall trend should calculate across all entries.");
 }
 
 function testHistorySearch() {
@@ -583,6 +635,24 @@ function testInvalidBackupRejected() {
             }]
         }
     }), "Invalid CPAP backup data should fail validation.");
+    assert(!app.context.isValidBackup({
+        version: 1,
+        logHistory: [],
+        medicalBay: {
+            history: [{
+                id: "medical-2026-06-04",
+                date: "2026-06-04",
+                painTypes: [],
+                weight: {
+                    date: "2026-06-04",
+                    weight: "121.3",
+                    waist: 118,
+                    notes: ""
+                },
+                updatedAt: "2026-06-04T00:00:00.000Z"
+            }]
+        }
+    }), "Invalid weight backup data should fail validation.");
 }
 
 function testVoiceCaptureStates() {
@@ -673,6 +743,7 @@ async function main() {
     await testStardateAutomation();
     await testMedicalBayCoreTracking();
     testCpapComplianceMonitoring();
+    testWeightTrendTracking();
     testHistorySearch();
     testHistoryRestoreFromUrl();
     testInvalidBackupRejected();

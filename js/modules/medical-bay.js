@@ -79,6 +79,7 @@ export async function resetMedicalBayForm() {
 
 export function getMedicalBayData() {
     const cpap = getCpapDataFromFields();
+    const weight = getWeightDataFromFields();
 
     return {
         date: getFieldValue("healthDateInput"),
@@ -101,6 +102,7 @@ export function getMedicalBayData() {
         wins: getFieldValue("healthWins"),
         challenges: getFieldValue("healthChallenges"),
         cpap: cpap,
+        weight: weight,
         summaryOutput: getFieldValue("medicalSummaryOutput")
     };
 }
@@ -186,6 +188,68 @@ export function getCpapStatus(score) {
     return "🔴 Poor";
 }
 
+export function getWeightDataFromFields() {
+    if (!hasWeightMetricInput()) {
+        return null;
+    }
+
+    return {
+        date: getFieldValue("weightDateInput"),
+        weight: Number(getFieldValue("weightKg")),
+        waist: getFieldValue("weightWaistCm").trim() === "" ? null : Number(getFieldValue("weightWaistCm")),
+        notes: getFieldValue("weightNotes")
+    };
+}
+
+export function hasWeightMetricInput() {
+    return [
+        "weightKg",
+        "weightWaistCm",
+        "weightNotes"
+    ].some(function (fieldId) {
+        return getFieldValue(fieldId).trim() !== "";
+    });
+}
+
+export function formatWeight(value) {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+        return "--";
+    }
+
+    return `${numericValue.toFixed(1)} kg`;
+}
+
+export function formatWeightChange(value) {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+        return "--";
+    }
+
+    const sign = numericValue > 0 ? "+" : "";
+    return `${sign}${numericValue.toFixed(1)} kg`;
+}
+
+export function getWeightTrendDirection(change) {
+    const numericChange = Number(change);
+
+    if (!Number.isFinite(numericChange)) {
+        return "--";
+    }
+
+    if (numericChange >= 0.2) {
+        return "Increasing";
+    }
+
+    if (numericChange <= -0.2) {
+        return "Decreasing";
+    }
+
+    return "Stable";
+}
+
 export function getSelectedMedicalPainTypes() {
     return MEDICAL_BAY_PAIN_TYPE_IDS.map(function (fieldId) {
         const field = document.getElementById(fieldId);
@@ -206,6 +270,7 @@ export function setSelectedMedicalPainTypes(painTypes) {
 export function buildMedicalBayMarkdown(data, trendSummary) {
     const cpapEntries = getCpapEntriesForCurrentData(data);
     const cpapCompliance = getCpapComplianceSummary(cpapEntries);
+    const weightSummary = buildWeightTrendSummary(getWeightEntriesForCurrentData(data));
 
     return `# Medical Bay Health Log
 
@@ -241,6 +306,19 @@ Mask Off Count: ${data.cpap ? data.cpap.maskOffCount : "--"}
 Compliance: ${cpapCompliance.percent}
 Status: ${data.cpap ? getCpapStatus(data.cpap.score) : "--"}
 Notes: ${data.cpap && data.cpap.notes ? data.cpap.notes : "Not recorded"}
+
+## Weight Summary
+
+Current Weight: ${data.weight ? formatWeight(data.weight.weight) : "--"}
+Weekly Change: ${weightSummary.weeklyChange}
+Trend Direction: ${weightSummary.trendDirection}
+Highest Recorded Weight: ${weightSummary.highest}
+Lowest Recorded Weight: ${weightSummary.lowest}
+4 Week Trend: ${weightSummary.fourWeekTrend}
+12 Week Trend: ${weightSummary.twelveWeekTrend}
+Overall Trend: ${weightSummary.overallTrend}
+Waist Measurement: ${data.weight && data.weight.waist !== null ? `${data.weight.waist.toFixed(1)} cm` : "--"}
+Notes: ${data.weight && data.weight.notes ? data.weight.notes : "Not recorded"}
 
 ## Energy
 
@@ -279,6 +357,7 @@ export function buildMedicalTrendSummary(data) {
     const history = getMedicalBayHistory();
     const recentEntries = history.slice(0, 7);
     const cpapSummary = buildCpapTrendSummary(getCpapEntriesForCurrentData(data));
+    const weightSummary = buildWeightTrendSummary(getWeightEntriesForCurrentData(data));
     const previousPainAverage = averageNumericValues(recentEntries.map(function (entry) {
         return entry.overallPain;
     }));
@@ -312,6 +391,10 @@ export function buildMedicalTrendSummary(data) {
         lines.push(`CPAP 30-day compliance is ${cpapSummary.compliance.percent} (${cpapSummary.compliance.compliantNights} compliant nights from ${cpapSummary.compliance.totalNights}).`);
     }
 
+    if (data.weight) {
+        lines.push(`Weight is ${formatWeight(data.weight.weight)} with weekly change ${weightSummary.weeklyChange} and ${weightSummary.trendDirection.toLowerCase()} direction.`);
+    }
+
     return lines.join("\n");
 }
 
@@ -324,6 +407,18 @@ export function getCpapEntriesForCurrentData(data) {
 
     return [data.cpap].concat(historyEntries.filter(function (entry) {
         return entry.date !== data.cpap.date;
+    }));
+}
+
+export function getWeightEntriesForCurrentData(data) {
+    const historyEntries = getWeightEntries(getMedicalBayHistory());
+
+    if (!data.weight) {
+        return historyEntries;
+    }
+
+    return [data.weight].concat(historyEntries.filter(function (entry) {
+        return entry.date !== data.weight.date;
     }));
 }
 
@@ -392,6 +487,55 @@ export function getCpapComplianceSummary(cpapEntries) {
     };
 }
 
+export function getWeightEntries(history) {
+    return (history || []).map(function (entry) {
+        return entry.weight || null;
+    }).filter(function (entry) {
+        return entry && entry.date && Number.isFinite(Number(entry.weight));
+    }).sort(function (a, b) {
+        return String(b.date).localeCompare(String(a.date));
+    });
+}
+
+export function buildWeightTrendSummary(weightEntries) {
+    const entries = weightEntries || getWeightEntries(getMedicalBayHistory());
+    const latest = entries[0] || null;
+    const previous = entries[1] || null;
+    const weeklyChangeValue = latest && previous ? latest.weight - previous.weight : null;
+    const weights = entries.map(function (entry) {
+        return Number(entry.weight);
+    });
+    const highest = weights.length ? Math.max.apply(null, weights) : null;
+    const lowest = weights.length ? Math.min.apply(null, weights) : null;
+
+    return {
+        latest: latest,
+        weeklyChangeValue: weeklyChangeValue,
+        weeklyChange: weeklyChangeValue === null ? "--" : formatWeightChange(weeklyChangeValue),
+        trendDirection: weeklyChangeValue === null ? "--" : getWeightTrendDirection(weeklyChangeValue),
+        highest: highest === null ? "--" : formatWeight(highest),
+        lowest: lowest === null ? "--" : formatWeight(lowest),
+        fourWeekTrend: getRollingWeightTrend(entries, 4),
+        twelveWeekTrend: getRollingWeightTrend(entries, 12),
+        overallTrend: getRollingWeightTrend(entries, entries.length),
+        totalEntries: entries.length
+    };
+}
+
+export function getRollingWeightTrend(entries, limit) {
+    const scopedEntries = (entries || []).slice(0, limit);
+
+    if (scopedEntries.length < 2) {
+        return "--";
+    }
+
+    const latest = scopedEntries[0];
+    const oldest = scopedEntries[scopedEntries.length - 1];
+    const change = latest.weight - oldest.weight;
+
+    return `${getWeightTrendDirection(change)} (${formatWeightChange(change)})`;
+}
+
 export function renderCpapDashboard() {
     const summary = buildCpapTrendSummary();
     const latest = summary.latest;
@@ -420,6 +564,36 @@ export function renderCpapDashboard() {
     setTextContent("cpapAverageUsage", summary.averageUsage);
     setTextContent("cpapAverageAhi", summary.averageEventsPerHour);
     setTextContent("cpapCompliance", `${summary.compliance.percent} (${summary.compliance.compliantNights}/${summary.compliance.totalNights})`);
+}
+
+export function renderWeightDashboard() {
+    const summary = buildWeightTrendSummary();
+    const latest = summary.latest;
+
+    if (!document.getElementById("weightCurrent")) {
+        return;
+    }
+
+    if (!latest) {
+        setTextContent("weightCurrent", "--");
+        setTextContent("weightWeeklyChange", "--");
+        setTextContent("weightTrendDirection", "--");
+        setTextContent("weightHighest", "--");
+        setTextContent("weightLowest", "--");
+        setTextContent("weightFourWeekTrend", "--");
+        setTextContent("weightTwelveWeekTrend", "--");
+        setTextContent("weightOverallTrend", "--");
+        return;
+    }
+
+    setTextContent("weightCurrent", formatWeight(latest.weight));
+    setTextContent("weightWeeklyChange", summary.weeklyChange);
+    setTextContent("weightTrendDirection", summary.trendDirection);
+    setTextContent("weightHighest", summary.highest);
+    setTextContent("weightLowest", summary.lowest);
+    setTextContent("weightFourWeekTrend", summary.fourWeekTrend);
+    setTextContent("weightTwelveWeekTrend", summary.twelveWeekTrend);
+    setTextContent("weightOverallTrend", summary.overallTrend);
 }
 
 export function validateMedicalBayInputs() {
@@ -456,6 +630,10 @@ export function validateMedicalBayInputs() {
     }
 
     if (!validateCpapInputs()) {
+        return false;
+    }
+
+    if (!validateWeightInputs()) {
         return false;
     }
 
@@ -523,6 +701,34 @@ export function validateNumberField(field, label, min, max) {
     if (!Number.isFinite(value) || value < min || (max !== null && value > max)) {
         showStatus(max === null ? `${label} must be ${min} or higher.` : `${label} must be between ${min} and ${max}.`, "error");
         field.focus();
+        return false;
+    }
+
+    return true;
+}
+
+export function validateWeightInputs() {
+    if (!hasWeightMetricInput()) {
+        return true;
+    }
+
+    const date = document.getElementById("weightDateInput");
+    const weight = document.getElementById("weightKg");
+    const waist = document.getElementById("weightWaistCm");
+
+    if (!date || date.value.trim() === "") {
+        showStatus("Weight entry date is required.", "error");
+        if (date) {
+            date.focus();
+        }
+        return false;
+    }
+
+    if (!validateNumberField(weight, "Weight", 0, null)) {
+        return false;
+    }
+
+    if (waist && waist.value.trim() !== "" && !validateNumberField(waist, "Waist measurement", 0, null)) {
         return false;
     }
 
@@ -625,6 +831,7 @@ export function loadLatestMedicalEntry() {
         setTextContent("medicalLatestEnergy", "--");
         setTextContent("medicalLatestStress", "--");
         renderCpapDashboard();
+        renderWeightDashboard();
         return;
     }
 
@@ -634,6 +841,7 @@ export function loadLatestMedicalEntry() {
     setTextContent("medicalLatestEnergy", latestEntry.energy || "--");
     setTextContent("medicalLatestStress", latestEntry.stress || "--");
     renderCpapDashboard();
+    renderWeightDashboard();
 }
 
 export function renderMedicalHistory() {
@@ -661,7 +869,7 @@ export function renderMedicalHistory() {
 
         item.className = "history-entry";
         title.textContent = entry.date || "Undated health log";
-        metrics.textContent = `Pain ${entry.overallPain || "--"} · Sleep ${entry.sleepHours || "--"}h · Energy ${entry.energy || "--"} · Stress ${entry.stress || "--"} · CPAP ${entry.cpap ? `${entry.cpap.score} ${formatCpapUsage(entry.cpap.usageMinutes)}` : "--"}`;
+        metrics.textContent = `Pain ${entry.overallPain || "--"} · Sleep ${entry.sleepHours || "--"}h · Energy ${entry.energy || "--"} · Stress ${entry.stress || "--"} · CPAP ${entry.cpap ? `${entry.cpap.score} ${formatCpapUsage(entry.cpap.usageMinutes)}` : "--"} · Weight ${entry.weight ? formatWeight(entry.weight.weight) : "--"}`;
         notes.textContent = entry.triggers ? `Triggers: ${entry.triggers}` : "No triggers recorded.";
 
         item.appendChild(title);

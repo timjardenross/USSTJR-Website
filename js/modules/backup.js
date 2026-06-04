@@ -332,6 +332,7 @@ export function isValidMedicalBayEntry(entry) {
         && isStringValue(entry.date)
         && Array.isArray(entry.painTypes)
         && (!entry.cpap || isValidCpapEntry(entry.cpap))
+        && (!entry.weight || isValidWeightEntry(entry.weight))
         && isStringValue(entry.updatedAt);
 }
 
@@ -343,6 +344,14 @@ export function isValidCpapEntry(entry) {
         && isNumberValue(entry.maskSeal)
         && isNumberValue(entry.eventsPerHour)
         && isNumberValue(entry.maskOffCount)
+        && isStringValue(entry.notes);
+}
+
+export function isValidWeightEntry(entry) {
+    return isPlainObject(entry)
+        && isStringValue(entry.date)
+        && isNumberValue(entry.weight)
+        && (entry.waist === null || isNumberValue(entry.waist))
         && isStringValue(entry.notes);
 }
 

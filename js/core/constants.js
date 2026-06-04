@@ -73,6 +73,10 @@ export const MEDICAL_BAY_FIELD_IDS = [
     "cpapEventsPerHour",
     "cpapMaskOffCount",
     "cpapNotes",
+    "weightDateInput",
+    "weightKg",
+    "weightWaistCm",
+    "weightNotes",
     "medicalSummaryOutput"
 ];
 

@@ -90,6 +90,41 @@
             </div>
         </section>
 
+        <section class="dashboard-grid" aria-label="Weight trend metrics">
+            <div class="metric-card">
+                <h3>Current Weight</h3>
+                <p id="weightCurrent">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>Weekly Change</h3>
+                <p id="weightWeeklyChange">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>Trend Direction</h3>
+                <p id="weightTrendDirection">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>Highest Weight</h3>
+                <p id="weightHighest">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>Lowest Weight</h3>
+                <p id="weightLowest">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>4 Week Trend</h3>
+                <p id="weightFourWeekTrend">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>12 Week Trend</h3>
+                <p id="weightTwelveWeekTrend">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>Overall Trend</h3>
+                <p id="weightOverallTrend">--</p>
+            </div>
+        </section>
+
         <section class="card" aria-labelledby="healthLogHeading">
             <h2 id="healthLogHeading">Daily Health Log</h2>
 
@@ -182,6 +217,27 @@
 
             <label for="cpapNotes">CPAP Notes</label>
             <textarea id="cpapNotes" rows="4"></textarea>
+        </section>
+
+        <section class="card" aria-labelledby="weightHeading">
+            <h2 id="weightHeading">Weekly Weight Tracking</h2>
+
+            <label for="weightDateInput">Date</label>
+            <input type="date" id="weightDateInput">
+
+            <div class="two-column-grid">
+                <div>
+                    <label for="weightKg">Weight (kg)</label>
+                    <input type="number" id="weightKg" min="0" step="0.1" inputmode="decimal" placeholder="kg">
+                </div>
+                <div>
+                    <label for="weightWaistCm">Waist Measurement (cm)</label>
+                    <input type="number" id="weightWaistCm" min="0" step="0.1" inputmode="decimal" placeholder="cm">
+                </div>
+            </div>
+
+            <label for="weightNotes">Weight Notes</label>
+            <textarea id="weightNotes" rows="4"></textarea>
         </section>
 
         <section class="card">

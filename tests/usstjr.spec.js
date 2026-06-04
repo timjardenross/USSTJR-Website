@@ -75,6 +75,10 @@ async function fillMedicalBay(page, values = {}) {
     await page.fill("#cpapEventsPerHour", values.cpapEventsPerHour || "1.1");
     await page.fill("#cpapMaskOffCount", values.cpapMaskOffCount || "0");
     await page.fill("#cpapNotes", values.cpapNotes || "Mask fit stable");
+    await page.fill("#weightDateInput", values.weightDate || values.date || "2026-06-04");
+    await page.fill("#weightKg", values.weightKg || "121.3");
+    await page.fill("#weightWaistCm", values.weightWaistCm || "118");
+    await page.fill("#weightNotes", values.weightNotes || "Week 2 on program");
 }
 
 async function saveMedicalBayLog(page, values = {}) {
@@ -183,12 +187,16 @@ test("Medical Bay core workflow saves health intelligence", async ({ page }) => 
         triggers: "E2E long sitting trigger",
         cpapScore: "94",
         cpapUsageTime: "07:42",
-        cpapEventsPerHour: "1.1"
+        cpapEventsPerHour: "1.1",
+        weightKg: "121.3",
+        weightWaistCm: "118"
     });
 
     await expect(page.locator("#medicalSummaryOutput")).toHaveValue(/E2E long sitting trigger/);
     await expect(page.locator("#medicalSummaryOutput")).toHaveValue(/CPAP Summary/);
+    await expect(page.locator("#medicalSummaryOutput")).toHaveValue(/Weight Summary/);
     await expect(page.locator("#medicalHistoryList")).toContainText("2026-06-04");
+    await expect(page.locator("#medicalHistoryList")).toContainText("Weight 121.3 kg");
     await expect(page.locator("#medicalLatestPain")).toHaveText("5");
     await expect(page.locator("#medicalLatestSleep")).toHaveText("6.5");
     await expect(page.locator("#medicalLatestEnergy")).toHaveText("6");
@@ -201,6 +209,11 @@ test("Medical Bay core workflow saves health intelligence", async ({ page }) => 
     await expect(page.locator("#cpapAverageUsage")).toHaveText("7h 42m");
     await expect(page.locator("#cpapAverageAhi")).toHaveText("1.1");
     await expect(page.locator("#cpapCompliance")).toHaveText("100% (1/1)");
+    await expect(page.locator("#weightCurrent")).toHaveText("121.3 kg");
+    await expect(page.locator("#weightWeeklyChange")).toHaveText("--");
+    await expect(page.locator("#weightTrendDirection")).toHaveText("--");
+    await expect(page.locator("#weightHighest")).toHaveText("121.3 kg");
+    await expect(page.locator("#weightLowest")).toHaveText("121.3 kg");
 });
 
 test("Medical Bay reset confirmation preserves or clears draft", async ({ page }) => {
@@ -216,6 +229,7 @@ test("Medical Bay reset confirmation preserves or clears draft", async ({ page }
     await page.click("#confirmModalConfirmButton");
     await expect(page.locator("#healthTriggers")).toHaveValue("");
     await expect(page.locator("#cpapScore")).toHaveValue("");
+    await expect(page.locator("#weightKg")).toHaveValue("");
 });
 
 test("Backup export and import include Captain's Log and Medical Bay data", async ({ page }, testInfo) => {
@@ -241,8 +255,11 @@ test("Backup export and import include Captain's Log and Medical Bay data", asyn
     expect(backup.medicalBay.history[0].triggers).toBe("E2E backup health trigger");
     expect(backup.medicalBay.history[0].cpap.score).toBe(94);
     expect(backup.medicalBay.history[0].cpap.usageMinutes).toBe(462);
+    expect(backup.medicalBay.history[0].weight.weight).toBe(121.3);
+    expect(backup.medicalBay.history[0].weight.waist).toBe(118);
     expect(backup.medicalBay.draft.healthTriggers).toBe("E2E backup health trigger");
     expect(backup.medicalBay.draft.cpapUsageTime).toBe("07:42");
+    expect(backup.medicalBay.draft.weightKg).toBe("121.3");
 
     const importPath = testInfo.outputPath("usstjr-backup.json");
     await fs.writeFile(importPath, JSON.stringify(backup, null, 2));
@@ -259,6 +276,8 @@ test("Backup export and import include Captain's Log and Medical Bay data", asyn
     await expect(page.locator("#medicalHistoryList")).toContainText("2026-06-04");
     await expect(page.locator("#cpapLatestScore")).toHaveText("94");
     await expect(page.locator("#cpapCompliance")).toHaveText("100% (1/1)");
+    await expect(page.locator("#weightCurrent")).toHaveText("121.3 kg");
+    await expect(page.locator("#weightHighest")).toHaveText("121.3 kg");
 });
 
 test("Browser module load smoke test", async ({ page }) => {
