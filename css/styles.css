@@ -385,6 +385,7 @@ textarea {
         grid-template-columns: 1fr;
     }
 }
+<<<<<<< HEAD
 
 .settings-row {
     display: flex;
@@ -402,3 +403,5 @@ textarea {
     width: 100%;
     margin: 0;
 }
+=======
+>>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
