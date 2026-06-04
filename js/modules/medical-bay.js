@@ -76,6 +76,7 @@ export async function resetMedicalBayForm() {
     MEDICAL_BAY_FIELD_IDS.forEach(function (fieldId) {
         setFieldValue(fieldId, "");
     });
+    setFieldValue("medicalSummaryOutput", "");
     setSelectedMedicalPainTypes([]);
     setMedicalBayDefaults();
     showStatus("Medical Bay draft reset.", "success");

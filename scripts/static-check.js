@@ -214,6 +214,7 @@ assert(indexHtml.includes("Open Computer Core"), "Command Deck must link to Comp
 assert(appJs.trim() === 'import "./main.js";', "Legacy app.js should only be a compatibility shim.");
 assert(!Object.prototype.hasOwnProperty.call(packageJson, "type"), "package.json must not force CommonJS scripts into ESM mode.");
 assert(packageJson.scripts.check === "node scripts/run-checks.js", "Missing package check script.");
+assert(!constantsJs.includes('"medicalSummaryOutput"'), "Medical Bay draft field ids must not include derived summary output.");
 assert(packageJson.scripts["test:prod"] === "playwright test --config=playwright.production.config.js", "Missing production smoke test script.");
 assert(packageJson.scripts["test:e2e"] === "playwright test", "Missing Playwright E2E script.");
 assert(packageJson.devDependencies["@playwright/test"], "Missing @playwright/test dev dependency.");

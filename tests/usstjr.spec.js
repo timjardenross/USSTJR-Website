@@ -309,6 +309,20 @@ test("Medical Bay renders zero metric values accurately", async ({ page }) => {
     await expect(page.locator("#computerResponse")).toContainText("Wakeups: 0");
 });
 
+test("Medical Bay draft restore ignores stale generated summary output", async ({ page }) => {
+    await page.goto("/medical-bay.html");
+    await page.evaluate(function () {
+        localStorage.setItem("usstjr-medical-bay-draft", JSON.stringify({
+            healthTriggers: "Legacy draft trigger",
+            medicalSummaryOutput: "Stale generated summary"
+        }));
+    });
+
+    await page.reload();
+    await expect(page.locator("#healthTriggers")).toHaveValue("Legacy draft trigger");
+    await expect(page.locator("#medicalSummaryOutput")).toHaveValue("");
+});
+
 test("Medical Bay reset confirmation preserves or clears draft", async ({ page }) => {
     await page.goto("/medical-bay.html");
     await page.fill("#healthTriggers", "Draft trigger should survive cancel");
@@ -384,6 +398,7 @@ test("Backup export and import include Captain's Log and Medical Bay data", asyn
     expect(backup.medicalBay.draft.healthTriggers).toBe("E2E backup health trigger");
     expect(backup.medicalBay.draft.cpapUsageTime).toBe("07:42");
     expect(backup.medicalBay.draft.weightKg).toBe("121.3");
+    expect(backup.medicalBay.draft).not.toHaveProperty("medicalSummaryOutput");
 
     const importPath = testInfo.outputPath("usstjr-backup.json");
     await fs.writeFile(importPath, JSON.stringify(backup, null, 2));

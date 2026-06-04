@@ -77,8 +77,7 @@ export const MEDICAL_BAY_FIELD_IDS = [
     "weightDateInput",
     "weightKg",
     "weightWaistCm",
-    "weightNotes",
-    "medicalSummaryOutput"
+    "weightNotes"
 ];
 
 export const MEDICAL_BAY_PAIN_TYPE_IDS = [

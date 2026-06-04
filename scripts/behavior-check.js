@@ -661,6 +661,16 @@ async function testMedicalBayCoreTracking() {
     assert(backup.medicalBay.draft.healthTriggers === "Long sitting block", "Backup should include Medical Bay draft.");
     assert(backup.medicalBay.draft.cpapUsageTime === "07:42", "Backup should include CPAP draft data.");
     assert(backup.medicalBay.draft.weightKg === "121.3", "Backup should include weight draft data.");
+    assert(!Object.prototype.hasOwnProperty.call(backup.medicalBay.draft, "medicalSummaryOutput"), "Backup draft should not store derived Medical Bay summary output.");
+
+    const legacyDraft = createContext();
+    legacyDraft.store["usstjr-medical-bay-draft"] = JSON.stringify({
+        healthTriggers: "Legacy draft trigger",
+        medicalSummaryOutput: "Stale generated summary"
+    });
+    legacyDraft.context.loadMedicalBayDraft();
+    assert(legacyDraft.fields.healthTriggers.value === "Legacy draft trigger", "Medical Bay draft restore should preserve structured fields.");
+    assert(legacyDraft.fields.medicalSummaryOutput.value === "", "Medical Bay draft restore should ignore stale generated summary output.");
 
     const restored = createContext();
     await restored.context.restoreBackup(backup);
