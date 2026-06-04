@@ -24,7 +24,8 @@ import {
     renderMedicalHistory,
     resetMedicalBayForm,
     saveMedicalBayLog,
-    setupMedicalBayAutosave
+    setupMedicalBayAutosave,
+    toggleMedicalHistoryDisplay
 } from "./modules/medical-bay.js";
 import {
     exportBackup,
@@ -73,6 +74,7 @@ export function setupActionHandlers() {
     bindClick("saveMedicalLogButton", saveMedicalBayLog);
     bindClick("downloadMedicalLogButton", downloadMedicalBayLog);
     bindClick("resetMedicalLogButton", resetMedicalBayForm);
+    bindClick("showMedicalHistoryButton", toggleMedicalHistoryDisplay);
 
     const importBackupInput = document.getElementById("importBackupInput");
     const importEncryptedBackupInput = document.getElementById("importEncryptedBackupInput");

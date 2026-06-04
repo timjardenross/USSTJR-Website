@@ -133,6 +133,23 @@ test("Captain's Log core workflow updates Command Deck", async ({ page }) => {
     await expect(page.locator("#latestStress")).toHaveText("2");
 });
 
+test("Status messages auto-dismiss successes and preserve errors", async ({ page }) => {
+    await fillCaptainsLog(page, {
+        wins: "E2E status auto-dismiss"
+    });
+
+    await page.click("#saveCaptainLogButton");
+    await expect(page.locator("#appStatus")).toContainText("saved");
+    await expect(page.locator("#appStatus")).toBeHidden({ timeout: 6000 });
+
+    await page.fill("#mood", "11");
+    await page.click("#saveCaptainLogButton");
+    await expect(page.locator("#appStatus")).toContainText("Mood must be a number from 0 to 10.");
+    await page.waitForTimeout(5100);
+    await expect(page.locator("#appStatus")).toBeVisible();
+    await expect(page.locator("#appStatus")).toContainText("Mood must be a number from 0 to 10.");
+});
+
 test("Captain's Log auto-calculates and increments stardates", async ({ page }) => {
     await page.goto("/captains-log.html");
     await expect(page.locator("#stardateInput")).toHaveValue(/^\d{6}\.\d{2}$/);
@@ -221,6 +238,40 @@ test("Medical Bay core workflow saves health intelligence", async ({ page }) => 
     await expect(page.locator("#weightTrendDirection")).toHaveText("--");
     await expect(page.locator("#weightHighest")).toHaveText("121.3 kg");
     await expect(page.locator("#weightLowest")).toHaveText("121.3 kg");
+});
+
+test("Medical Bay history can show all stored entries", async ({ page }) => {
+    for (let day = 10; day >= 4; day -= 1) {
+        const date = `2026-06-${String(day).padStart(2, "0")}`;
+
+        await fillMedicalBay(page, {
+            date,
+            overallPain: String(day - 4),
+            triggers: `E2E medical history trigger ${day}`,
+            cpapDate: date,
+            weightDate: date,
+            weightKg: String(120 + day / 10)
+        });
+        await page.click("#saveMedicalLogButton");
+    }
+
+    await page.goto("/medical-bay.html");
+    await expect(page.locator("#medicalHistoryList .history-entry")).toHaveCount(5);
+    await expect(page.locator("#medicalHistoryList .history-entry").first()).toContainText("2026-06-10");
+    await expect(page.locator("#medicalHistoryList")).not.toContainText("2026-06-04");
+    await expect(page.locator("#showMedicalHistoryButton")).toBeVisible();
+    await expect(page.locator("#showMedicalHistoryButton")).toHaveText("Show All History");
+    await expect(page.locator("#showMedicalHistoryButton")).toHaveAttribute("aria-expanded", "false");
+
+    await page.click("#showMedicalHistoryButton");
+    await expect(page.locator("#medicalHistoryList .history-entry")).toHaveCount(7);
+    await expect(page.locator("#medicalHistoryList")).toContainText("2026-06-04");
+    await expect(page.locator("#showMedicalHistoryButton")).toHaveText("Show Less");
+    await expect(page.locator("#showMedicalHistoryButton")).toHaveAttribute("aria-expanded", "true");
+
+    await page.click("#showMedicalHistoryButton");
+    await expect(page.locator("#medicalHistoryList .history-entry")).toHaveCount(5);
+    await expect(page.locator("#showMedicalHistoryButton")).toHaveText("Show All History");
 });
 
 test("Medical Bay renders zero metric values accurately", async ({ page }) => {

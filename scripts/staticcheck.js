@@ -162,6 +162,7 @@ const deploymentDocs = readFile("docs/deployment.md");
     "downloadMedicalLogButton",
     "resetMedicalLogButton",
     "medicalSummaryOutput",
+    "showMedicalHistoryButton",
     "medicalHistoryList"
 ].forEach(function (id) {
     assert(medicalBayHtml.includes(`id="${id}"`), `Missing Medical Bay control: ${id}`);
@@ -199,6 +200,9 @@ assert(deploymentDocs.includes("Rollback"), "Deployment docs must include rollba
     [datesJs, "generateNextStardateForDate"],
     [datesJs, "setTodayDefaults"],
     [statusJs, "showStatus"],
+    [statusJs, "clearStatus"],
+    [statusJs, "SUCCESS_STATUS_TIMEOUT_MS"],
+    [statusJs, "setTimeout"],
     [domJs, "bindClick"],
     [confirmModalJs, "confirmAction"],
     [commandDeckJs, "clearLogHistory"],
@@ -210,6 +214,8 @@ assert(deploymentDocs.includes("Rollback"), "Deployment docs must include rollba
     [captainsLogJs, "loadHistoryEntryFromUrl"],
     [medicalBayJs, "saveMedicalBayLog"],
     [medicalBayJs, "renderMedicalHistory"],
+    [medicalBayJs, "toggleMedicalHistoryDisplay"],
+    [medicalBayJs, "MEDICAL_HISTORY_DEFAULT_VISIBLE_COUNT"],
     [medicalBayJs, "getCpapStatus"],
     [medicalBayJs, "buildCpapTrendSummary"],
     [medicalBayJs, "getCpapComplianceSummary"],

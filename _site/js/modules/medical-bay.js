@@ -12,6 +12,10 @@ import { showStatus } from "../core/status.js";
 import { storageGetJson, storageRemoveItem, storageSetJson } from "../core/storage.js";
 import { confirmAction } from "./confirm-modal.js";
 
+const MEDICAL_HISTORY_DEFAULT_VISIBLE_COUNT = 5;
+
+let isMedicalHistoryExpanded = false;
+
 export function getMedicalBayDraftData() {
     const draft = {};
 
@@ -853,6 +857,7 @@ export function loadLatestMedicalEntry() {
 
 export function renderMedicalHistory() {
     const medicalHistoryList = document.getElementById("medicalHistoryList");
+    const showMedicalHistoryButton = document.getElementById("showMedicalHistoryButton");
 
     if (!medicalHistoryList) {
         return;
@@ -861,6 +866,14 @@ export function renderMedicalHistory() {
     const history = getMedicalBayHistory();
     medicalHistoryList.textContent = "";
 
+    if (showMedicalHistoryButton) {
+        const hasHiddenEntries = history.length > MEDICAL_HISTORY_DEFAULT_VISIBLE_COUNT;
+
+        showMedicalHistoryButton.hidden = !hasHiddenEntries;
+        showMedicalHistoryButton.textContent = isMedicalHistoryExpanded ? "Show Less" : "Show All History";
+        showMedicalHistoryButton.setAttribute("aria-expanded", isMedicalHistoryExpanded ? "true" : "false");
+    }
+
     if (history.length === 0) {
         const emptyMessage = document.createElement("p");
         emptyMessage.textContent = "No health logs yet.";
@@ -868,7 +881,9 @@ export function renderMedicalHistory() {
         return;
     }
 
-    history.slice(0, 5).forEach(function (entry) {
+    const visibleHistory = isMedicalHistoryExpanded ? history : history.slice(0, MEDICAL_HISTORY_DEFAULT_VISIBLE_COUNT);
+
+    visibleHistory.forEach(function (entry) {
         const item = document.createElement("article");
         const title = document.createElement("h3");
         const metrics = document.createElement("p");
@@ -884,6 +899,11 @@ export function renderMedicalHistory() {
         item.appendChild(notes);
         medicalHistoryList.appendChild(item);
     });
+}
+
+export function toggleMedicalHistoryDisplay() {
+    isMedicalHistoryExpanded = !isMedicalHistoryExpanded;
+    renderMedicalHistory();
 }
 
 export function getSavedMedicalBayDraft() {

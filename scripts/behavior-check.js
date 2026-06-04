@@ -46,8 +46,12 @@ function createElement(initialState) {
         hidden: false,
         href: "",
         listeners: {},
+        attributes: {},
         select() {},
         setSelectionRange() {},
+        setAttribute(name, value) {
+            this.attributes[name] = String(value);
+        },
         dispatchEvent(event) {
             (this.listeners[event.type] || []).forEach(function (handler) {
                 handler(event);
@@ -79,6 +83,7 @@ function createContext(options) {
     const store = {};
     const downloads = [];
     const appendedElements = [];
+    const timers = [];
     let recognitionInstance = null;
 
     function MockRecognition() {
@@ -187,6 +192,7 @@ function createContext(options) {
         recentLogsList: createElement(),
         recordingStatus: createElement({ textContent: "Not recording" }),
         saveCaptainLogButton: createElement(),
+        showMedicalHistoryButton: createElement({ hidden: true }),
         startVoiceCaptureButton: createElement(),
         stardateInput: createElement({ value: settings.stardateValue === undefined ? "260604.01" : settings.stardateValue }),
         stopVoiceCaptureButton: createElement(),
@@ -234,6 +240,11 @@ function createContext(options) {
             error() {},
             log: console.log
         },
+        clearTimeout(timer) {
+            if (timer) {
+                timer.active = false;
+            }
+        },
         document: {
             body: {
                 appendChild(child) {
@@ -265,6 +276,15 @@ function createContext(options) {
                 store[key] = String(value);
             }
         },
+        setTimeout(callback, delay) {
+            const timer = {
+                active: true,
+                callback,
+                delay
+            };
+            timers.push(timer);
+            return timer;
+        },
         window: windowObject
     };
 
@@ -281,6 +301,14 @@ function createContext(options) {
         fields,
         getRecognition() {
             return recognitionInstance;
+        },
+        runTimers() {
+            timers.slice().forEach(function (timer) {
+                if (timer.active) {
+                    timer.active = false;
+                    timer.callback();
+                }
+            });
         },
         store
     };
@@ -390,6 +418,32 @@ function testVoiceSystemUnsupportedBrowser() {
 
     assert(unsupported.context.window.USSTJR.Voice.isReady() === false, "Unsupported voice system should not report ready.");
     assert(unsupported.context.window.USSTJR.Voice.isEnabled() === false, "Unsupported voice system should still default disabled.");
+}
+
+function testStatusAutoDismissBehavior() {
+    const success = createContext();
+
+    success.context.showStatus("Captain's Log saved.", "success");
+    assert(success.fields.appStatus.hidden === false, "Success status should display immediately.");
+    assert(success.fields.appStatus.textContent === "Captain's Log saved.", "Success status text should render.");
+    success.runTimers();
+    assert(success.fields.appStatus.hidden === true, "Success status should auto-dismiss.");
+    assert(success.fields.appStatus.textContent === "", "Auto-dismissed status should clear text.");
+
+    const error = createContext();
+
+    error.context.showStatus("Backup import failed.", "error");
+    error.runTimers();
+    assert(error.fields.appStatus.hidden === false, "Error status should remain visible.");
+    assert(error.fields.appStatus.textContent === "Backup import failed.", "Error status text should persist.");
+
+    const race = createContext();
+
+    race.context.showStatus("Backup exported.", "success");
+    race.context.showStatus("Unable to import backup.", "error");
+    race.runTimers();
+    assert(race.fields.appStatus.hidden === false, "Older success timer should not clear a newer error.");
+    assert(race.fields.appStatus.textContent === "Unable to import backup.", "Newer error should remain after old success timer.");
 }
 
 async function testLogHistoryAndBackup() {
@@ -569,7 +623,10 @@ async function testStardateAutomation() {
     const reset = createContext();
     reset.context.saveCaptainLog();
     await reset.context.clearDraftAndResetForm();
-    assert(reset.fields.stardateInput.value === "260604.02", "Reset should generate next stardate for today.");
+    const expectedResetStardate = reset.context.generateNextStardateForDate(reset.fields.dateInput.value, reset.context.getLogHistory().map(function (entry) {
+        return entry.stardate;
+    }));
+    assert(reset.fields.stardateInput.value === expectedResetStardate, "Reset should generate next stardate for the reset date.");
 }
 
 async function testMedicalBayCoreTracking() {
@@ -618,6 +675,51 @@ async function testMedicalBayCoreTracking() {
     assert(app.fields.healthPainTypeNerve.checked === false, "Medical Bay reset should clear pain type checkboxes.");
     assert(app.fields.weightKg.value === "", "Medical Bay reset should clear weight.");
     assert(app.fields.appStatus.textContent.includes("reset"), "Medical Bay reset should update status.");
+}
+
+function testMedicalBayHistoryShowAllToggle() {
+    const app = createContext();
+    const history = Array.from({ length: 7 }, function (_, index) {
+        const day = 10 - index;
+
+        return {
+            id: `medical-2026-06-${String(day).padStart(2, "0")}`,
+            date: `2026-06-${String(day).padStart(2, "0")}`,
+            overallPain: String(index),
+            sleepHours: "7",
+            wakeups: "1",
+            energy: "6",
+            mood: "7",
+            stress: "3",
+            triggers: `Trigger ${index}`,
+            updatedAt: `2026-06-${String(day).padStart(2, "0")}T00:00:00.000Z`
+        };
+    });
+
+    app.context.saveMedicalBayHistory(history);
+    app.context.renderMedicalHistory();
+
+    assert(app.fields.medicalHistoryList.children.length === 5, "Medical Bay history should show five entries by default.");
+    assert(app.fields.medicalHistoryList.children[0].children[0].textContent === "2026-06-10", "Medical Bay history should preserve latest-first ordering.");
+    assert(app.fields.medicalHistoryList.children[4].children[0].textContent === "2026-06-06", "Default Medical Bay history should stop at the fifth entry.");
+    assert(app.fields.showMedicalHistoryButton.hidden === false, "Show All button should appear when more than five entries exist.");
+    assert(app.fields.showMedicalHistoryButton.textContent === "Show All History", "Collapsed history button label should invite expansion.");
+    assert(app.fields.showMedicalHistoryButton.attributes["aria-expanded"] === "false", "Collapsed history button should expose aria-expanded false.");
+
+    app.context.toggleMedicalHistoryDisplay();
+    assert(app.fields.medicalHistoryList.children.length === 7, "Show All should reveal all stored Medical Bay entries.");
+    assert(app.fields.medicalHistoryList.children[6].children[0].textContent === "2026-06-04", "Expanded Medical Bay history should include the oldest stored entry.");
+    assert(app.fields.showMedicalHistoryButton.textContent === "Show Less", "Expanded history button label should offer collapse.");
+    assert(app.fields.showMedicalHistoryButton.attributes["aria-expanded"] === "true", "Expanded history button should expose aria-expanded true.");
+
+    app.context.toggleMedicalHistoryDisplay();
+    assert(app.fields.medicalHistoryList.children.length === 5, "Show Less should return Medical Bay history to five entries.");
+
+    const shortHistory = createContext();
+    shortHistory.context.saveMedicalBayHistory(history.slice(0, 2));
+    shortHistory.context.renderMedicalHistory();
+    assert(shortHistory.fields.medicalHistoryList.children.length === 2, "Short Medical Bay history should show all available entries.");
+    assert(shortHistory.fields.showMedicalHistoryButton.hidden === true, "Show All button should stay hidden when fewer than six entries exist.");
 }
 
 function testComputerCoreLocalQueries() {
@@ -930,12 +1032,14 @@ async function main() {
     await testVoiceSystemPreferenceGate();
     testVoiceSystemLoadsPersistedPreference();
     testVoiceSystemUnsupportedBrowser();
+    testStatusAutoDismissBehavior();
     await testLogHistoryAndBackup();
     await testCommandDeckSync();
     await testHistoryControls();
     await testDownloadAndResetWorkflows();
     await testStardateAutomation();
     await testMedicalBayCoreTracking();
+    testMedicalBayHistoryShowAllToggle();
     testComputerCoreLocalQueries();
     testMedicalBayZeroMetricRendering();
     testCpapComplianceMonitoring();
