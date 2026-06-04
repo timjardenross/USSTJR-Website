@@ -6,10 +6,7 @@ export const MEDICAL_BAY_DRAFT_KEY = "usstjr-medical-bay-draft";
 export const MEDICAL_BAY_HISTORY_KEY = "usstjr-medical-bay-history";
 export const MEDICAL_BAY_HISTORY_LIMIT = 30;
 export const BACKUP_VERSION = 1;
-<<<<<<< HEAD
 export const VOICE_ENABLED_KEY = "usstjr-voice-enabled";
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
 
 export const CAPTAINS_LOG_FIELD_IDS = [
     "stardateInput",
@@ -77,13 +74,10 @@ export const MEDICAL_BAY_FIELD_IDS = [
     "cpapEventsPerHour",
     "cpapMaskOffCount",
     "cpapNotes",
-<<<<<<< HEAD
-=======
     "weightDateInput",
     "weightKg",
     "weightWaistCm",
     "weightNotes",
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
     "medicalSummaryOutput"
 ];
 

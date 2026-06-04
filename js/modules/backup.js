@@ -12,10 +12,6 @@ import {
     saveLogHistory
 } from "./command-deck.js";
 import { confirmAction } from "./confirm-modal.js";
-<<<<<<< HEAD
-import { voiceSpeak } from "./voice.js";
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
 import { getSavedDraft, restoreDraft } from "./captains-log.js";
 import {
     getMedicalBayHistory,
@@ -46,10 +42,9 @@ export function exportBackup() {
 
     downloadTextFile(filename, JSON.stringify(backup, null, 2), "application/json");
     showStatus("Backup exported.", "success");
-<<<<<<< HEAD
-    voiceSpeak("Backup export complete, Captain.");
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
+    if (window.USSTJR && window.USSTJR.Voice) {
+        USSTJR.Voice.speak("Backup export complete, Captain.");
+    }
 }
 
 export function importBackup(event) {
@@ -66,10 +61,9 @@ export function importBackup(event) {
         try {
             if (await restoreBackup(JSON.parse(String(reader.result || "{}")))) {
                 showStatus("Backup imported.", "success");
-<<<<<<< HEAD
-                voiceSpeak("Backup import complete, Captain.");
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
+                if (window.USSTJR && window.USSTJR.Voice) {
+                    USSTJR.Voice.speak("Backup import complete, Captain.");
+                }
             }
         } catch (error) {
             console.error("Unable to import backup:", error);
@@ -105,10 +99,9 @@ export async function exportEncryptedBackup() {
 
     downloadTextFile(filename, JSON.stringify(encryptedBackup, null, 2), "application/json");
     showStatus("Encrypted backup exported.", "success");
-<<<<<<< HEAD
-    voiceSpeak("Backup export complete, Captain.");
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
+    if (window.USSTJR && window.USSTJR.Voice) {
+        USSTJR.Voice.speak("Backup export complete, Captain.");
+    }
 }
 
 export function importEncryptedBackup(event) {
@@ -141,10 +134,9 @@ export function importEncryptedBackup(event) {
 
             if (await restoreBackup(backup)) {
                 showStatus("Encrypted backup imported.", "success");
-<<<<<<< HEAD
-                voiceSpeak("Backup import complete, Captain.");
-=======
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
+                if (window.USSTJR && window.USSTJR.Voice) {
+                    USSTJR.Voice.speak("Backup import complete, Captain.");
+                }
             }
         } catch (error) {
             console.error("Unable to import encrypted backup:", error);
@@ -352,10 +344,7 @@ export function isValidMedicalBayEntry(entry) {
         && isStringValue(entry.date)
         && Array.isArray(entry.painTypes)
         && (!entry.cpap || isValidCpapEntry(entry.cpap))
-<<<<<<< HEAD
-=======
         && (!entry.weight || isValidWeightEntry(entry.weight))
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
         && isStringValue(entry.updatedAt);
 }
 
@@ -370,8 +359,6 @@ export function isValidCpapEntry(entry) {
         && isStringValue(entry.notes);
 }
 
-<<<<<<< HEAD
-=======
 export function isValidWeightEntry(entry) {
     return isPlainObject(entry)
         && isStringValue(entry.date)
@@ -379,8 +366,6 @@ export function isValidWeightEntry(entry) {
         && (entry.waist === null || isNumberValue(entry.waist))
         && isStringValue(entry.notes);
 }
-
->>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
 export function isPlainObject(value) {
     return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }

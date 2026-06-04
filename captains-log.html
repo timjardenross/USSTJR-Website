@@ -23,7 +23,6 @@
         <button
           id="usstjr-voice-btn"
           class="usstjr-voice-btn"
-          onclick="USSTJR.VoiceCommands.toggle()"
           aria-label="Toggle Voice Commands"
           title="Say 'Computer' followed by a command"
         >
@@ -176,14 +175,7 @@
     <script src="js/voice-commands.js"></script>
 
     <script>
-      window.addEventListener('load', () => {
-        const stardate = localStorage.getItem('usstjr-stardate') || '';
-        USSTJR.Voice.speak(USSTJR.Voice.phrases.logReady)
-          .then(() => USSTJR.Voice.announceStardate(stardate));
-      });
-    </script>
-
-    <script>
+      // Register Captain's Log voice command actions
       USSTJR.VoiceCommands.registerAction('voiceStart',  () => startVoiceCapture());
       USSTJR.VoiceCommands.registerAction('voiceStop',   () => stopVoiceCapture());
       USSTJR.VoiceCommands.registerAction('saveLog',     () => downloadLog());
@@ -192,10 +184,16 @@
 
     <script>
       (function () {
+        // Initialize voice button and state wiring
         const btn   = document.getElementById('usstjr-voice-btn');
         const label = document.getElementById('usstjr-voice-btn-label');
 
         if (!btn || !label) return;
+
+        // Add click handler for voice button
+        btn.addEventListener('click', () => {
+          USSTJR.VoiceCommands.toggle();
+        });
 
         USSTJR.VoiceCommands.on('activated',   () => {
           btn.classList.add('active');
@@ -219,6 +217,15 @@
           label.textContent = 'VOICE ACTIVE';
         });
       })();
+    </script>
+
+    <script>
+      // Page load announcement
+      window.addEventListener('load', () => {
+        const stardate = localStorage.getItem('usstjr-stardate') || '';
+        USSTJR.Voice.speak(USSTJR.Voice.phrases.logReady)
+          .then(() => USSTJR.Voice.announceStardate(stardate));
+      });
     </script>
 
     <script type="module" src="js/main.js"></script>
