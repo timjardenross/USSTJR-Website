@@ -2,6 +2,7 @@ const CAPTAINS_LOG_DRAFT_KEY = "usstjr-captains-log-draft";
 const LATEST_CAPTAINS_LOG_KEY = "usstjr-latest-captains-log";
 const CAPTAINS_LOG_HISTORY_KEY = "usstjr-captains-log-history";
 const CAPTAINS_LOG_HISTORY_LIMIT = 20;
+const BACKUP_VERSION = 1;
 
 const CAPTAINS_LOG_FIELD_IDS = [
     "stardateInput",
@@ -46,12 +47,51 @@ const CAPTAINS_LOG_METRIC_FIELDS = [
 let voiceRecognition = null;
 let isVoiceCaptureRunning = false;
 
+function getSpeechRecognitionConstructor() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition;
+}
+
 function updateRecordingStatus(message) {
     const statusElement = document.getElementById("recordingStatus");
 
     if (statusElement) {
         statusElement.textContent = message;
     }
+}
+
+function setVoiceCaptureControlsState() {
+    const startButton = document.getElementById("startVoiceCaptureButton");
+    const stopButton = document.getElementById("stopVoiceCaptureButton");
+    const supportMessage = document.getElementById("voiceCaptureSupportMessage");
+    const isSupported = Boolean(getSpeechRecognitionConstructor());
+
+    if (startButton) {
+        startButton.disabled = !isSupported || isVoiceCaptureRunning;
+    }
+
+    if (stopButton) {
+        stopButton.disabled = !isSupported || !isVoiceCaptureRunning;
+    }
+
+    if (supportMessage) {
+        supportMessage.hidden = isSupported;
+    }
+
+    if (!isSupported) {
+        updateRecordingStatus("Voice capture unavailable");
+    }
+}
+
+function getVoiceCaptureErrorMessage(errorCode) {
+    const messages = {
+        "audio-capture": "Microphone unavailable",
+        "network": "Speech service unavailable",
+        "no-speech": "No speech detected",
+        "not-allowed": "Microphone permission denied",
+        "service-not-allowed": "Speech service permission denied"
+    };
+
+    return messages[errorCode] || `Voice capture error: ${errorCode || "unknown"}`;
 }
 
 function generateStardate() {
@@ -98,9 +138,36 @@ function initialiseCaptainsLogPage() {
     setTodayDefaults();
     loadDraft();
     loadHistoryEntryFromUrl();
+    setupActionHandlers();
+    setVoiceCaptureControlsState();
     setupDraftAutosave();
     loadLatestEntryToCommandDeck();
     renderRecentLogsToCommandDeck();
+}
+
+function setupActionHandlers() {
+    bindClick("startVoiceCaptureButton", startVoiceCapture);
+    bindClick("stopVoiceCaptureButton", stopVoiceCapture);
+    bindClick("generateLogButton", generateLog);
+    bindClick("saveCommandDeckStatusButton", saveCommandDeckStatus);
+    bindClick("copyLogButton", copyLog);
+    bindClick("downloadLogButton", downloadLog);
+    bindClick("resetFormButton", clearDraftAndResetForm);
+    bindClick("exportBackupButton", exportBackup);
+
+    const importBackupInput = document.getElementById("importBackupInput");
+
+    if (importBackupInput) {
+        importBackupInput.addEventListener("change", importBackup);
+    }
+}
+
+function bindClick(elementId, handler) {
+    const element = document.getElementById(elementId);
+
+    if (element) {
+        element.addEventListener("click", handler);
+    }
 }
 
 function getDraftData() {
@@ -384,37 +451,26 @@ function downloadLog() {
 
     const filename = `${date}-Stardate-${stardate}.md`;
 
-    const blob = new Blob([markdown], {
-        type: "text/markdown"
-    });
-
-    const link = document.createElement("a");
-
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    URL.revokeObjectURL(link.href);
+    downloadTextFile(filename, markdown, "text/markdown");
 }
 
 function startVoiceCapture() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = getSpeechRecognitionConstructor();
     const voiceCapture = document.getElementById("voiceCapture");
 
     if (!SpeechRecognition) {
-        alert("Voice capture is not supported in this browser. Try Chrome or Safari with dictation enabled.");
+        updateRecordingStatus("Voice capture unavailable");
+        setVoiceCaptureControlsState();
         return;
     }
 
     if (!voiceCapture) {
-        alert("Voice capture field is missing from this page.");
+        updateRecordingStatus("Voice transcript field unavailable");
         return;
     }
 
     if (isVoiceCaptureRunning && voiceRecognition) {
+        setVoiceCaptureControlsState();
         return;
     }
 
@@ -443,32 +499,184 @@ function startVoiceCapture() {
     };
 
     voiceRecognition.onerror = function (event) {
-        alert(`Voice capture error: ${event.error}`);
-        updateRecordingStatus(`⚠️ Voice capture error: ${event.error}`);
+        updateRecordingStatus(getVoiceCaptureErrorMessage(event.error));
         isVoiceCaptureRunning = false;
+        setVoiceCaptureControlsState();
+        saveDraft();
     };
 
     voiceRecognition.onend = function () {
-        updateRecordingStatus("⚪ Recording stopped");
         isVoiceCaptureRunning = false;
+        updateRecordingStatus("Recording stopped");
+        setVoiceCaptureControlsState();
+        saveDraft();
     };
 
-    updateRecordingStatus("🔴 Recording in progress...");
-    voiceRecognition.start();
-    isVoiceCaptureRunning = true;
+    try {
+        voiceRecognition.start();
+        isVoiceCaptureRunning = true;
+        updateRecordingStatus("Recording");
+        setVoiceCaptureControlsState();
+    } catch (error) {
+        console.error("Unable to start voice capture:", error);
+        isVoiceCaptureRunning = false;
+        updateRecordingStatus("Unable to start voice capture");
+        setVoiceCaptureControlsState();
+    }
 }
 
 function stopVoiceCapture() {
     if (voiceRecognition && isVoiceCaptureRunning) {
         voiceRecognition.stop();
-        updateRecordingStatus("⚪ Recording stopped");
         isVoiceCaptureRunning = false;
+        updateRecordingStatus("Recording stopped");
+        setVoiceCaptureControlsState();
         saveDraft();
     }
 }
 
 function saveLatestEntry(entry) {
     localStorage.setItem(LATEST_CAPTAINS_LOG_KEY, JSON.stringify(entry));
+}
+
+function exportBackup() {
+    const backup = {
+        version: BACKUP_VERSION,
+        exportedAt: new Date().toISOString(),
+        latestEntry: getLatestEntry(),
+        logHistory: getLogHistory(),
+        draft: getSavedDraft(),
+        stardateCounters: getStardateCounters()
+    };
+    const filename = `usstjr-backup-${getLocalDateInputValue(new Date())}.json`;
+
+    downloadTextFile(filename, JSON.stringify(backup, null, 2), "application/json");
+}
+
+function importBackup(event) {
+    const fileInput = event.target;
+    const file = fileInput.files && fileInput.files[0];
+
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function () {
+        try {
+            if (restoreBackup(JSON.parse(String(reader.result || "{}")))) {
+                alert("Backup imported.");
+            }
+        } catch (error) {
+            console.error("Unable to import backup:", error);
+            alert("Unable to import backup. Check that the file is a USS TJR JSON backup.");
+        } finally {
+            fileInput.value = "";
+        }
+    };
+
+    reader.onerror = function () {
+        alert("Unable to read backup file.");
+        fileInput.value = "";
+    };
+
+    reader.readAsText(file);
+}
+
+function restoreBackup(backup) {
+    if (!backup || backup.version !== BACKUP_VERSION || !Array.isArray(backup.logHistory)) {
+        throw new Error("Invalid backup format.");
+    }
+
+    const confirmImport = confirm("Importing this backup will replace current USS TJR local data in this browser.");
+
+    if (!confirmImport) {
+        return false;
+    }
+
+    if (backup.latestEntry) {
+        saveLatestEntry(backup.latestEntry);
+    } else {
+        localStorage.removeItem(LATEST_CAPTAINS_LOG_KEY);
+    }
+
+    saveLogHistory(backup.logHistory);
+    restoreDraft(backup.draft);
+    restoreStardateCounters(backup.stardateCounters || {});
+    loadLatestEntryToCommandDeck();
+    renderRecentLogsToCommandDeck();
+
+    return true;
+}
+
+function getSavedDraft() {
+    const savedDraft = localStorage.getItem(CAPTAINS_LOG_DRAFT_KEY);
+
+    if (!savedDraft) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(savedDraft);
+    } catch (error) {
+        console.error("Unable to read Captain's Log draft:", error);
+        return null;
+    }
+}
+
+function restoreDraft(draft) {
+    if (draft) {
+        localStorage.setItem(CAPTAINS_LOG_DRAFT_KEY, JSON.stringify(draft));
+    } else {
+        localStorage.removeItem(CAPTAINS_LOG_DRAFT_KEY);
+    }
+}
+
+function getStardateCounters() {
+    const counters = {};
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+
+        if (key && key.indexOf("usstjr-stardate-") === 0) {
+            counters[key] = localStorage.getItem(key);
+        }
+    }
+
+    return counters;
+}
+
+function restoreStardateCounters(counters) {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+
+        if (key && key.indexOf("usstjr-stardate-") === 0) {
+            localStorage.removeItem(key);
+        }
+    }
+
+    Object.keys(counters).forEach(function (key) {
+        if (key.indexOf("usstjr-stardate-") === 0) {
+            localStorage.setItem(key, String(counters[key]));
+        }
+    });
+}
+
+function downloadTextFile(filename, text, type) {
+    const blob = new Blob([text], {
+        type: type
+    });
+    const link = document.createElement("a");
+
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(link.href);
 }
 
 function getLogHistory() {

@@ -6,6 +6,11 @@ USS TJR is a static personal resilience operating system website. The current ap
 
 ```text
 USSTJR-Website/
+├── .github/
+│   └── workflows/
+│       └── static-checks.yml
+├── scripts/
+│   └── static-check.js
 ├── index.html
 ├── captains-log.html
 ├── css/
@@ -27,9 +32,11 @@ No build step or dependency install is required.
 2. Use **Start New Log** to open the Captain's Log page.
 3. Fill in the daily check-in fields.
 4. Select **Generate Markdown** to create the log output.
-5. Select **Copy Markdown** or **Download + Reset Form** to keep a copy.
+5. Select **Save Status** to save the log to local history and update the Command Deck.
+6. Select **Copy Markdown** or **Download Markdown** to keep a markdown copy.
+7. Use **Export Backup** on the Command Deck to download all local USS TJR data as JSON.
 
-For best voice capture support, use a browser that implements the Web Speech API, such as Chrome. Browser support varies, and microphone permissions may be required.
+For best voice capture support, use a browser that implements the Web Speech API, such as Chrome. Browser support varies, and microphone permissions may be required. When voice capture is unavailable, the transcript field remains available for manual entry.
 
 ## Data Storage Model
 
@@ -40,7 +47,18 @@ The app currently stores data in browser `localStorage`:
 - Captain's Log history is stored under `usstjr-captains-log-history`.
 - Daily stardate counters are stored under keys beginning with `usstjr-stardate-`.
 
-This means data is local to the current browser profile and device. It is not synced, backed up, encrypted, or stored on a server. Use the markdown download workflow to keep durable copies of important logs.
+This means data is local to the current browser profile and device. It is not synced, encrypted, or stored on a server. Use the markdown download and JSON backup workflows to keep durable copies of important logs.
+
+## Validation
+
+Run the static checks locally with:
+
+```sh
+node --check js/app.js
+node scripts/static-check.js
+```
+
+GitHub Actions runs the same checks on pushes to `main` and on pull requests.
 
 ## Deployment
 
@@ -68,8 +86,4 @@ Core app behavior should work in modern desktop and mobile browsers with JavaScr
 
 ## Known Follow-Up Work
 
-- Add local-date-safe stardate defaults.
-- Add 0-10 metric validation before generating logs.
-- Add import and export backup support.
-- Move inline HTML event handlers into JavaScript event listeners.
-- Add accessibility and mobile layout checks.
+- Add fuller automated browser coverage once a test runner is introduced.

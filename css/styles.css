@@ -5,6 +5,33 @@ body {
     color: #ffffff;
 }
 
+.skip-link {
+    background: #ffcc66;
+    color: #000;
+    font-weight: bold;
+    left: 12px;
+    padding: 10px 14px;
+    position: absolute;
+    top: -48px;
+    z-index: 10;
+}
+
+.skip-link:focus {
+    top: 12px;
+}
+
+.visually-hidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
 .header {
     background: linear-gradient(90deg, #ff9966, #cc99cc);
     color: #000;
@@ -103,16 +130,39 @@ body {
 .button {
     display: inline-block;
     background: #ffcc66;
+    border: 0;
     color: #000;
+    cursor: pointer;
     padding: 14px 24px;
     text-decoration: none;
     border-radius: 999px;
     font-weight: bold;
+    font-size: 1rem;
+    font-family: Arial, Helvetica, sans-serif;
     text-transform: uppercase;
 }
 
 .button:hover {
     background: #ff9966;
+}
+
+.button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.button:focus-visible,
+.skip-link:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
+}
+
+.secondary-button {
+    background: #cc99cc;
+}
+
+.import-button {
+    width: auto;
 }
 
 .captain-log-panel .button {
@@ -173,6 +223,23 @@ label {
     font-weight: bold;
 }
 
+label.visually-hidden {
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+label.import-button {
+    color: #000;
+    display: inline-block;
+    margin: 4px;
+}
+
 input,
 textarea {
     width: 100%;
@@ -192,6 +259,12 @@ textarea:focus {
     outline: none;
     border-color: #ffcc66;
     box-shadow: 0 0 10px rgba(255, 204, 102, 0.35);
+}
+
+input:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 3px;
 }
 
 textarea {
