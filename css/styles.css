@@ -137,40 +137,6 @@ body {
     margin-bottom: 16px;
 }
 
-.nav-bar {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: 16px;
-    background: #0d0d14;
-    border-bottom: 2px solid #ff9966;
-}
-
-.nav-bar a {
-    color: #ffcc66;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 1px solid #ff9966;
-    transition: background 0.2s, color 0.2s;
-}
-
-.nav-bar a:hover {
-    background: #ff9966;
-    color: #000;
-}
-
-.nav-bar a.active {
-    background: #ffcc66;
-    color: #000;
-    border-color: #ffcc66;
-}
-
 .command-status {
     margin-bottom: 16px;
 }
@@ -419,3 +385,23 @@ textarea {
         grid-template-columns: 1fr;
     }
 }
+<<<<<<< HEAD
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.settings-label {
+    font-weight: bold;
+    min-width: 120px;
+}
+
+.settings-row .helper-text {
+    width: 100%;
+    margin: 0;
+}
+=======
+>>>>>>> d9d5088f02020ecb5fced9e87824b743f28ab55c
