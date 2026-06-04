@@ -21,7 +21,21 @@ USSTJR-Website/
 ├── css/
 │   └── styles.css
 └── js/
-    └── app.js
+    ├── app.js
+    ├── main.js
+    ├── core/
+    │   ├── constants.js
+    │   ├── dates.js
+    │   ├── dom.js
+    │   ├── status.js
+    │   └── storage.js
+    └── modules/
+        ├── backup.js
+        ├── captains-log.js
+        ├── command-deck.js
+        ├── confirm-modal.js
+        ├── medical-bay.js
+        └── voice-capture.js
 ```
 
 ## Pages
@@ -29,6 +43,8 @@ USSTJR-Website/
 - `index.html` is the Command Deck. It shows mission status, current modules, current focus areas, and the latest saved Captain's Log status metrics.
 - `captains-log.html` is the daily log form. It captures status metrics, written reflections, voice transcript text, tomorrow's priorities, and generated markdown.
 - `medical-bay.html` is the Medical Bay MVP. It captures pain, mood, sleep, energy, and daily health notes, then generates a health intelligence markdown summary.
+
+The browser entry point is `js/main.js`, loaded with native ES modules. `js/app.js` is kept only as a compatibility shim.
 
 ## Local Usage
 
@@ -105,5 +121,4 @@ Core app behavior should work in modern desktop and mobile browsers with JavaScr
 See `BACKLOG.md` for the current completed-work list, next backlog items, and parking lot.
 
 - Add fuller automated browser coverage with a browser runner such as Playwright.
-- Split `js/app.js` into modules when the app needs a build step or more pages.
 - Choose a sync provider or backend before adding true multi-device cloud sync.

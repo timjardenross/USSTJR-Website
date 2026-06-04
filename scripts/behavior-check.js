@@ -2,7 +2,25 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
-const appSource = fs.readFileSync(path.join(__dirname, "..", "js", "app.js"), "utf8");
+const moduleFiles = [
+    "js/core/constants.js",
+    "js/core/status.js",
+    "js/core/storage.js",
+    "js/core/dates.js",
+    "js/core/dom.js",
+    "js/modules/confirm-modal.js",
+    "js/modules/voice-capture.js",
+    "js/modules/command-deck.js",
+    "js/modules/captains-log.js",
+    "js/modules/medical-bay.js",
+    "js/modules/backup.js",
+    "js/main.js"
+];
+const appSource = moduleFiles.map(function (filePath) {
+    return fs.readFileSync(path.join(__dirname, "..", filePath), "utf8")
+        .replace(/^import[\s\S]*?;\n/gm, "")
+        .replace(/export /g, "");
+}).join("\n");
 
 function createElement(initialState) {
     const element = Object.assign({
@@ -206,6 +224,9 @@ function createContext(options) {
 
     vm.createContext(context);
     vm.runInContext(appSource, context);
+    if (context.setVoiceCaptureDraftSaver && context.saveDraft) {
+        context.setVoiceCaptureDraftSaver(context.saveDraft);
+    }
 
     return {
         context,
