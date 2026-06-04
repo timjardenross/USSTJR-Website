@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USS TJR - Captain's Log</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
+
+    <header class="header">
+        <h1>Captain's Log</h1>
+        <p class="subtitle">Daily Mission Record</p>
+    </header>
+
+    <main id="mainContent" class="container">
+        <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
+
+        <div id="confirmModal" class="modal-backdrop" hidden>
+            <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+                <h2 id="confirmModalTitle">Confirm Action</h2>
+                <p id="confirmModalMessage"></p>
+                <div class="modal-actions">
+                    <button id="confirmModalConfirmButton" class="button" type="button">Confirm</button>
+                    <button id="confirmModalCancelButton" class="button secondary-button" type="button">Cancel</button>
+                </div>
+            </section>
+        </div>
+
+        <section class="card">
+            <h2>Log Details</h2>
+
+            <label for="stardateInput">Stardate</label>
+            <input type="text" id="stardateInput">
+
+            <label for="dateInput">Date</label>
+            <input type="date" id="dateInput">
+        </section>
+
+        <section class="dashboard-grid" aria-label="Daily status metrics" aria-describedby="metricScaleHelp">
+            <div class="metric-card">
+                <h3 id="moodLabel">Mood</h3>
+                <input type="number" id="mood" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10" aria-labelledby="moodLabel" aria-describedby="metricScaleHelp">
+            </div>
+
+            <div class="metric-card">
+                <h3 id="energyLabel">Energy</h3>
+                <input type="number" id="energy" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10" aria-labelledby="energyLabel" aria-describedby="metricScaleHelp">
+            </div>
+
+            <div class="metric-card">
+                <h3 id="painLabel">Pain</h3>
+                <input type="number" id="pain" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10" aria-labelledby="painLabel" aria-describedby="metricScaleHelp">
+            </div>
+
+            <div class="metric-card">
+                <h3 id="stressLabel">Stress</h3>
+                <input type="number" id="stress" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10" aria-labelledby="stressLabel" aria-describedby="metricScaleHelp">
+            </div>
+        </section>
+        <p id="metricScaleHelp" class="helper-text">Use 0-10 where 0 is lowest and 10 is highest.</p>
+
+        <section class="card" aria-labelledby="winsHeading">
+            <h2 id="winsHeading">Today's Wins</h2>
+            <textarea id="wins" rows="4" aria-labelledby="winsHeading"></textarea>
+        </section>
+
+        <section class="card" aria-labelledby="challengesHeading">
+            <h2 id="challengesHeading">Challenges</h2>
+            <textarea id="challenges" rows="4" aria-labelledby="challengesHeading"></textarea>
+        </section>
+
+        <section class="card" aria-labelledby="lessonsHeading">
+            <h2 id="lessonsHeading">Lessons Learned</h2>
+            <textarea id="lessons" rows="4" aria-labelledby="lessonsHeading"></textarea>
+        </section>
+
+        <section class="card" aria-labelledby="gratitudeHeading">
+            <h2 id="gratitudeHeading">Gratitude</h2>
+            <textarea id="gratitude" rows="4" aria-labelledby="gratitudeHeading"></textarea>
+        </section>
+
+        <section class="two-column-grid">
+            <div class="card" aria-labelledby="healthHeading">
+                <h2 id="healthHeading">Health</h2>
+                <textarea id="health" rows="4" aria-labelledby="healthHeading"></textarea>
+            </div>
+
+            <div class="card" aria-labelledby="careerHeading">
+                <h2 id="careerHeading">Career</h2>
+                <textarea id="career" rows="4" aria-labelledby="careerHeading"></textarea>
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="mindbodyHeading">
+            <h2 id="mindbodyHeading">TJR Mind Body</h2>
+            <textarea id="mindbody" rows="4" aria-labelledby="mindbodyHeading"></textarea>
+        </section>
+
+        <section class="card captain-log-panel" aria-labelledby="voiceCaptureHeading">
+            <h2 id="voiceCaptureHeading">Voice Capture</h2>
+            <p>Speak your reflections naturally. The transcript will be saved with your draft and included in the generated log.</p>
+
+            <button id="startVoiceCaptureButton" class="button" type="button">Start Voice Capture</button>
+            <button id="stopVoiceCaptureButton" class="button secondary-button" type="button">Stop Voice Capture</button>
+
+            <p id="recordingStatus" aria-live="polite">Not recording</p>
+            <p id="voiceCaptureSupportMessage" class="helper-text" hidden>Voice capture is unavailable in this browser.</p>
+
+            <label for="voiceCapture" class="visually-hidden">Voice transcript</label>
+            <textarea id="voiceCapture" rows="8" placeholder="Voice transcript will appear here..."></textarea>
+        </section>
+
+        <section class="card">
+            <h2>Tomorrow's Priorities</h2>
+
+            <label for="priority1" class="visually-hidden">Priority 1</label>
+            <input type="text" id="priority1" placeholder="Priority 1">
+            <label for="priority2" class="visually-hidden">Priority 2</label>
+            <input type="text" id="priority2" placeholder="Priority 2">
+            <label for="priority3" class="visually-hidden">Priority 3</label>
+            <input type="text" id="priority3" placeholder="Priority 3">
+        </section>
+
+        <section class="card captain-log-panel" aria-labelledby="generateLogHeading">
+            <h2 id="generateLogHeading">Generate Log</h2>
+
+            <button id="generateLogButton" class="button" type="button">Generate Markdown</button>
+            <button id="saveCommandDeckStatusButton" class="button" type="button">Save Status</button>
+            <button id="copyLogButton" class="button secondary-button" type="button">Copy Markdown</button>
+            <button id="downloadLogButton" class="button" type="button">Download Markdown</button>
+            <button id="resetFormButton" class="button secondary-button" type="button">Reset Form</button>
+
+            <label for="markdownOutput" class="visually-hidden">Generated markdown output</label>
+            <textarea id="markdownOutput" rows="20" readonly></textarea>
+        </section>
+
+        <section class="card">
+            <a href="index.html" class="button">Return to Command Deck</a>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>USS TJR v1.0 · Captain's Log Online</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+
+</body>
+</html>

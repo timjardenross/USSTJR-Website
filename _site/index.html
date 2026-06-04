@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USS TJR - Command Deck</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
+
+    <header class="header">
+        <h1>USS TJR Command Deck</h1>
+        <p class="subtitle">Personal Resilience Operating System</p>
+    </header>
+
+    <main id="mainContent" class="container">
+        <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
+
+        <div id="confirmModal" class="modal-backdrop" hidden>
+            <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+                <h2 id="confirmModalTitle">Confirm Action</h2>
+                <p id="confirmModalMessage"></p>
+                <div class="modal-actions">
+                    <button id="confirmModalConfirmButton" class="button" type="button">Confirm</button>
+                    <button id="confirmModalCancelButton" class="button secondary-button" type="button">Cancel</button>
+                </div>
+            </section>
+        </div>
+
+        <section class="card command-status">
+            <h2>Command Status</h2>
+            <p><strong>Current Stardate:</strong> <span id="commandStardate">--</span></p>
+            <p><strong>Mission Status:</strong> 🟡 Active</p>
+            <p><strong>System Status:</strong> 🟢 Online</p>
+        </section>
+
+        <section class="dashboard-grid" aria-label="System status metrics">
+            <div class="metric-card">
+                <h3>Mood</h3>
+                <p id="commandMood">--</p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Energy</h3>
+                <p id="commandEnergy">--</p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Pain</h3>
+                <p id="commandPain">--</p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Stress</h3>
+                <p id="commandStress">--</p>
+            </div>
+        </section>
+
+        <section class="card captain-log-panel">
+            <h2>Captain's Log</h2>
+            <p>Begin today's check-in and generate a structured Captain's Log entry.</p>
+
+            <a href="captains-log.html" class="button">
+                Start New Log
+            </a>
+            <p><em>Daily logging system operational.</em></p>
+        </section>
+
+        <section class="card captain-log-panel">
+            <h2>Medical Bay</h2>
+            <p>Record pain, sleep, energy, mood, and recovery notes for health trend intelligence.</p>
+
+            <a href="medical-bay.html" class="button">
+                Open Medical Bay
+            </a>
+            <p><em>Core health tracking operational.</em></p>
+        </section>
+
+        <section class="card captain-log-panel" aria-labelledby="backupHeading">
+            <h2 id="backupHeading">Backup</h2>
+            <button id="exportBackupButton" class="button" type="button">Export Backup</button>
+            <label for="importBackupInput" class="button secondary-button import-button">Import Backup</label>
+            <input id="importBackupInput" class="visually-hidden" type="file" accept="application/json,.json">
+            <label for="backupPassphraseInput">Backup Passphrase</label>
+            <input id="backupPassphraseInput" type="password" autocomplete="new-password">
+            <button id="exportEncryptedBackupButton" class="button" type="button">Export Encrypted</button>
+            <label for="importEncryptedBackupInput" class="button secondary-button import-button">Import Encrypted</label>
+            <input id="importEncryptedBackupInput" class="visually-hidden" type="file" accept="application/json,.json">
+        </section>
+
+        <section class="two-column-grid">
+            <div class="card">
+                <h2>Current Missions</h2>
+                <ul>
+                    <li>Reach 95kg</li>
+                    <li>Improve mobility</li>
+                    <li>Develop TJR Mind Body</li>
+                    <li>Deploy USS TJR v1.0</li>
+                    <li>Grow operational resilience expertise</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Today's Focus</h2>
+                <ul>
+                    <li>🩺 Health & Recovery</li>
+                    <li>🏦 Career Growth</li>
+                    <li>🌱 TJR Mind Body</li>
+                    <li>🤖 USS TJR Development</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>System Modules</h2>
+            <ul>
+                <li>🖖 Command Deck — Online</li>
+                <li>📝 Captain's Log — Online</li>
+                <li>🏥 Medical Bay — Online</li>
+                <li>🎯 Mission Control — Planned</li>
+                <li>🧠 Computer Core — Planned</li>
+            </ul>
+        </section>
+
+        <section class="card latest-entry-panel">
+            <h2>Latest Entry</h2>
+            <p><strong>Stardate:</strong> <span id="latestEntryStardate">No entry recorded yet</span></p>
+
+            <div class="status-grid">
+                <div>Mood: <span id="latestMood">--</span></div>
+                <div>Energy: <span id="latestEnergy">--</span></div>
+                <div>Pain: <span id="latestPain">--</span></div>
+                <div>Stress: <span id="latestStress">--</span></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Recent Logs</h2>
+            <label for="historySearchInput">Search Logs</label>
+            <input id="historySearchInput" type="search" placeholder="Search stardate, date, metrics, or log text">
+            <button id="clearHistoryButton" class="button secondary-button compact-button" type="button">Clear History</button>
+            <div id="recentLogsList" class="history-list" aria-live="polite">
+                <p>No saved logs yet.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>USS TJR v1.0 · Command Deck Online</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+
+</body>
+</html>
