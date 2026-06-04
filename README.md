@@ -11,10 +11,16 @@ USSTJR-Website/
 │       └── static-checks.yml
 ├── scripts/
 │   ├── behavior-check.js
+│   ├── run-checks.js
+│   ├── static-server.js
 │   └── static-check.js
+├── tests/
+│   └── usstjr.spec.js
 ├── .gitignore
 ├── BACKLOG.md
 ├── MEDICAL_BAY_SCOPE.md
+├── package.json
+├── playwright.config.js
 ├── index.html
 ├── captains-log.html
 ├── medical-bay.html
@@ -83,13 +89,21 @@ Encrypted backups are protected with a passphrase in the browser using Web Crypt
 
 ## Validation
 
-Run the full local check suite with:
+Run the dependency-free static and behavior check suite with:
 
 ```sh
 node scripts/run-checks.js
 ```
 
-GitHub Actions runs the same checks on pushes to `main` and on pull requests.
+Run browser E2E coverage after installing dev dependencies:
+
+```sh
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+GitHub Actions installs Playwright Chromium and runs `npm test` on pushes to `main` and on pull requests.
 
 ## Deployment
 
@@ -120,5 +134,4 @@ Core app behavior should work in modern desktop and mobile browsers with JavaScr
 
 See `BACKLOG.md` for the current completed-work list, next backlog items, and parking lot.
 
-- Add fuller automated browser coverage with a browser runner such as Playwright.
 - Choose a sync provider or backend before adding true multi-device cloud sync.

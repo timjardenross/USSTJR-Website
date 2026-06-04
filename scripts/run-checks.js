@@ -13,7 +13,10 @@ const jsFiles = [
     "js/modules/medical-bay.js",
     "js/modules/backup.js",
     "js/modules/voice-capture.js",
-    "js/modules/confirm-modal.js"
+    "js/modules/confirm-modal.js",
+    "playwright.config.js",
+    "scripts/static-server.js",
+    "tests/usstjr.spec.js"
 ];
 
 const checks = jsFiles.map(function (filePath) {

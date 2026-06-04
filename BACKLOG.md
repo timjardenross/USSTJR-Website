@@ -17,24 +17,24 @@
 - Test Voice Capture support, unavailable states, transcript capture, stop handling, and permission errors.
 - Build Medical Bay Phase 1 for daily pain, mood, sleep, energy, notes, history, markdown summaries, and backup support.
 - Split `js/app.js` into native ES modules with `js/main.js` as the browser entry point.
+- Add Playwright E2E coverage for Command Deck, Captain's Log, Medical Bay, backup/restore, confirmation modal, and ES module browser loading.
 
 ## Next Backlog Items
 
-1. Add full browser automation coverage with a test runner such as Playwright.
-2. Choose a cloud sync provider, backend, and authentication model.
-3. Implement multi-device sync after the provider/backend decision is made.
-4. Build Medical Bay Phase 2 for medications, blood pressure, weight, and CPAP tracking.
-5. Build Medical Bay Phase 3 for medical history, specialists, and procedure tracking.
-6. Build Medical Bay Phase 4 for document vault upload, storage, search, and retrieval.
-7. Build Medical Bay Phase 5 analytics for trends, correlations, and visualisations.
-8. Add Weekly Intelligence Summary from saved Captain's Logs, Medical Bay logs, and Command Deck status.
-9. Build Computer Core as the central data, settings, and system-control surface.
-10. Add encrypted backup behavior tests for Web Crypto-capable browser environments.
-11. Add import/export regression tests around invalid encrypted files and wrong passphrases.
-12. Add richer recent-log filters, such as date range, metric thresholds, and tags.
-13. Add a guided restore preview before replacing local browser data.
-14. Add a storage usage indicator and warning when browser storage is close to quota.
-15. Add a lightweight release checklist for static deployment.
+1. Choose a cloud sync provider, backend, and authentication model.
+2. Implement multi-device sync after the provider/backend decision is made.
+3. Build Medical Bay Phase 2 for medications, blood pressure, weight, and CPAP tracking.
+4. Build Medical Bay Phase 3 for medical history, specialists, and procedure tracking.
+5. Build Medical Bay Phase 4 for document vault upload, storage, search, and retrieval.
+6. Build Medical Bay Phase 5 analytics for trends, correlations, and visualisations.
+7. Add Weekly Intelligence Summary from saved Captain's Logs, Medical Bay logs, and Command Deck status.
+8. Build Computer Core as the central data, settings, and system-control surface.
+9. Add encrypted backup behavior tests for Web Crypto-capable browser environments.
+10. Add import/export regression tests around invalid encrypted files and wrong passphrases.
+11. Add richer recent-log filters, such as date range, metric thresholds, and tags.
+12. Add a guided restore preview before replacing local browser data.
+13. Add a storage usage indicator and warning when browser storage is close to quota.
+14. Add a lightweight release checklist for static deployment.
 
 ## Parking Lot
 

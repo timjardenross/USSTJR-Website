@@ -20,12 +20,16 @@ const requiredFiles = [
     "js/modules/backup.js",
     "js/modules/voice-capture.js",
     "js/modules/confirm-modal.js",
+    "package.json",
+    "playwright.config.js",
     "README.md",
     "BACKLOG.md",
     "MEDICAL_BAY_SCOPE.md",
     ".gitignore",
     "scripts/run-checks.js",
-    "scripts/behavior-check.js"
+    "scripts/behavior-check.js",
+    "scripts/static-server.js",
+    "tests/usstjr.spec.js"
 ];
 
 function readFile(filePath) {
@@ -59,6 +63,9 @@ const medicalBayJs = readFile("js/modules/medical-bay.js");
 const backupJs = readFile("js/modules/backup.js");
 const voiceCaptureJs = readFile("js/modules/voice-capture.js");
 const confirmModalJs = readFile("js/modules/confirm-modal.js");
+const packageJson = JSON.parse(readFile("package.json"));
+const playwrightConfigJs = readFile("playwright.config.js");
+const e2eSpecJs = readFile("tests/usstjr.spec.js");
 
 [indexHtml, captainsLogHtml, medicalBayHtml].forEach(function (html) {
     assert(!/\son[a-z]+="/i.test(html), "Inline event handlers are not allowed.");
@@ -132,6 +139,16 @@ const confirmModalJs = readFile("js/modules/confirm-modal.js");
 });
 
 assert(appJs.trim() === 'import "./main.js";', "Legacy app.js should only be a compatibility shim.");
+assert(!Object.prototype.hasOwnProperty.call(packageJson, "type"), "package.json must not force CommonJS scripts into ESM mode.");
+assert(packageJson.scripts.check === "node scripts/run-checks.js", "Missing package check script.");
+assert(packageJson.scripts["test:e2e"] === "playwright test", "Missing Playwright E2E script.");
+assert(packageJson.devDependencies["@playwright/test"], "Missing @playwright/test dev dependency.");
+assert(playwrightConfigJs.includes("scripts/static-server.js"), "Playwright config must use the static server.");
+assert(playwrightConfigJs.includes("127.0.0.1:4173"), "Playwright config must target local static server.");
+assert(e2eSpecJs.includes("Command Deck loads correctly"), "Missing Command Deck E2E test.");
+assert(e2eSpecJs.includes("Captain's Log core workflow"), "Missing Captain's Log E2E test.");
+assert(e2eSpecJs.includes("Medical Bay core workflow"), "Missing Medical Bay E2E test.");
+assert(e2eSpecJs.includes("Backup export and import"), "Missing backup E2E test.");
 
 [
     [mainJs, "initialiseApp"],

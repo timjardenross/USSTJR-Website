@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "check": "node scripts/run-checks.js",
+    "test:e2e": "playwright test",
+    "test": "node scripts/run-checks.js && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest"
+  }
+}
