@@ -59,6 +59,58 @@ body {
     padding: 0 16px;
 }
 
+.app-status {
+    background: #222230;
+    border: 2px solid #ffcc66;
+    border-radius: 12px;
+    color: #ffffff;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+}
+
+.app-status.error {
+    border-color: #ff9966;
+}
+
+.app-status.success {
+    border-color: #9be28f;
+}
+
+.modal-backdrop {
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    left: 0;
+    padding: 20px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 20;
+}
+
+.modal {
+    background: #181820;
+    border: 2px solid #ffcc66;
+    border-radius: 12px;
+    max-width: 520px;
+    padding: 20px;
+    width: 100%;
+}
+
+.modal h2 {
+    color: #ffcc66;
+    margin-top: 0;
+}
+
+.modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
 .card {
     background: #181820;
     border-left: 16px solid #ff9966;
@@ -184,6 +236,7 @@ body {
 .history-list {
     display: grid;
     gap: 12px;
+    margin-top: 12px;
 }
 
 .history-entry {
@@ -200,6 +253,12 @@ body {
 
 .history-entry p {
     margin: 0 0 8px;
+}
+
+.history-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .compact-button {
@@ -241,7 +300,8 @@ label.import-button {
 }
 
 input,
-textarea {
+textarea,
+select {
     width: 100%;
     background: #0d0d14;
     color: #ffffff;
@@ -255,20 +315,51 @@ textarea {
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
     outline: none;
     border-color: #ffcc66;
     box-shadow: 0 0 10px rgba(255, 204, 102, 0.35);
 }
 
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+select:focus-visible {
     outline: 3px solid #ffffff;
     outline-offset: 3px;
 }
 
 textarea {
     resize: vertical;
+}
+
+.option-group {
+    border: 2px solid #ff9966;
+    border-radius: 12px;
+    margin: 14px 0 12px;
+    padding: 12px;
+}
+
+.option-group legend {
+    color: #ffcc66;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 0 6px;
+    text-transform: uppercase;
+}
+
+.option-group label {
+    align-items: center;
+    color: #ffffff;
+    display: inline-flex;
+    gap: 8px;
+    margin: 6px 12px 6px 0;
+    text-transform: none;
+}
+
+.option-group input[type="checkbox"] {
+    margin: 0;
+    width: auto;
 }
 
 @media (max-width: 768px) {

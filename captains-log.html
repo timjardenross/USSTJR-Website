@@ -17,6 +17,18 @@
     </header>
 
     <main id="mainContent" class="container">
+        <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
+
+        <div id="confirmModal" class="modal-backdrop" hidden>
+            <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+                <h2 id="confirmModalTitle">Confirm Action</h2>
+                <p id="confirmModalMessage"></p>
+                <div class="modal-actions">
+                    <button id="confirmModalConfirmButton" class="button" type="button">Confirm</button>
+                    <button id="confirmModalCancelButton" class="button secondary-button" type="button">Cancel</button>
+                </div>
+            </section>
+        </div>
 
         <section class="card">
             <h2>Log Details</h2>

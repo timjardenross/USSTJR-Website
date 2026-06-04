@@ -19,8 +19,5 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Check JavaScript syntax
-        run: node --check js/app.js
-
-      - name: Run static checks
-        run: node scripts/static-check.js
+      - name: Run checks
+        run: node scripts/run-checks.js

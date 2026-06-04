@@ -1,6 +1,6 @@
 # USSTJR Website
 
-USS TJR is a static personal resilience operating system website. The current app provides a Command Deck dashboard and a Captain's Log workflow for daily check-ins, markdown generation, voice transcript capture, and local draft storage.
+USS TJR is a static personal resilience operating system website. The current app provides a Command Deck dashboard, a Captain's Log workflow, and a Medical Bay MVP for daily health tracking.
 
 ## Current Structure
 
@@ -10,9 +10,14 @@ USSTJR-Website/
 │   └── workflows/
 │       └── static-checks.yml
 ├── scripts/
+│   ├── behavior-check.js
 │   └── static-check.js
+├── .gitignore
+├── BACKLOG.md
+├── MEDICAL_BAY_SCOPE.md
 ├── index.html
 ├── captains-log.html
+├── medical-bay.html
 ├── css/
 │   └── styles.css
 └── js/
@@ -23,6 +28,7 @@ USSTJR-Website/
 
 - `index.html` is the Command Deck. It shows mission status, current modules, current focus areas, and the latest saved Captain's Log status metrics.
 - `captains-log.html` is the daily log form. It captures status metrics, written reflections, voice transcript text, tomorrow's priorities, and generated markdown.
+- `medical-bay.html` is the Medical Bay MVP. It captures pain, mood, sleep, energy, and daily health notes, then generates a health intelligence markdown summary.
 
 ## Local Usage
 
@@ -35,6 +41,10 @@ No build step or dependency install is required.
 5. Select **Save Status** to save the log to local history and update the Command Deck.
 6. Select **Copy Markdown** or **Download Markdown** to keep a markdown copy.
 7. Use **Export Backup** on the Command Deck to download all local USS TJR data as JSON.
+8. Use a backup passphrase with **Export Encrypted** and **Import Encrypted** when you want a protected local backup file.
+9. Search recent logs by stardate, date, metrics, or log text.
+10. Use **Download** or **Delete** on individual recent logs, or **Clear History** to remove local log history.
+11. Use **Open Medical Bay** to save daily health logs and download health intelligence summaries.
 
 For best voice capture support, use a browser that implements the Web Speech API, such as Chrome. Browser support varies, and microphone permissions may be required. When voice capture is unavailable, the transcript field remains available for manual entry.
 
@@ -45,24 +55,29 @@ The app currently stores data in browser `localStorage`:
 - Draft Captain's Log data is stored under `usstjr-captains-log-draft`.
 - Latest Command Deck status data is stored under `usstjr-latest-captains-log`.
 - Captain's Log history is stored under `usstjr-captains-log-history`.
+- Medical Bay draft data is stored under `usstjr-medical-bay-draft`.
+- Medical Bay health log history is stored under `usstjr-medical-bay-history`.
 - Daily stardate counters are stored under keys beginning with `usstjr-stardate-`.
 
-This means data is local to the current browser profile and device. It is not synced, encrypted, or stored on a server. Use the markdown download and JSON backup workflows to keep durable copies of important logs.
+This means data is local to the current browser profile and device. It is not synced or stored on a server. Use the markdown download, JSON backup, and encrypted backup workflows to keep durable copies of important logs.
+
+Status and error messages are shown in-page where possible. Destructive actions such as clearing drafts, clearing history, deleting a log, and importing a backup use custom confirmation dialogs.
+
+Encrypted backups are protected with a passphrase in the browser using Web Crypto APIs. Store the passphrase separately; the app cannot recover it if it is lost.
 
 ## Validation
 
-Run the static checks locally with:
+Run the full local check suite with:
 
 ```sh
-node --check js/app.js
-node scripts/static-check.js
+node scripts/run-checks.js
 ```
 
 GitHub Actions runs the same checks on pushes to `main` and on pull requests.
 
 ## Deployment
 
-This repository can be hosted as a static site. Any static host that serves `index.html`, `captains-log.html`, `css/styles.css`, and `js/app.js` should work.
+This repository can be hosted as a static site. Any static host that serves `index.html`, `captains-log.html`, `medical-bay.html`, `css/styles.css`, and `js/app.js` should work.
 
 Suitable deployment targets include:
 
@@ -83,7 +98,12 @@ Core app behavior should work in modern desktop and mobile browsers with JavaScr
 - Treat `localStorage` as temporary convenience storage, not durable archival storage.
 - Prefer small, focused changes while the app is still a compact static prototype.
 - If the app grows beyond a few pages or needs tests, introduce a minimal toolchain deliberately.
+- Keep behavior coverage focused on critical workflows before large refactors.
 
 ## Known Follow-Up Work
 
-- Add fuller automated browser coverage once a test runner is introduced.
+See `BACKLOG.md` for the current completed-work list, next backlog items, and parking lot.
+
+- Add fuller automated browser coverage with a browser runner such as Playwright.
+- Split `js/app.js` into modules when the app needs a build step or more pages.
+- Choose a sync provider or backend before adding true multi-device cloud sync.

@@ -5,9 +5,15 @@ const root = path.resolve(__dirname, "..");
 const requiredFiles = [
     "index.html",
     "captains-log.html",
+    "medical-bay.html",
     "css/styles.css",
     "js/app.js",
-    "README.md"
+    "README.md",
+    "BACKLOG.md",
+    "MEDICAL_BAY_SCOPE.md",
+    ".gitignore",
+    "scripts/run-checks.js",
+    "scripts/behavior-check.js"
 ];
 
 function readFile(filePath) {
@@ -26,10 +32,11 @@ requiredFiles.forEach(function (filePath) {
 
 const indexHtml = readFile("index.html");
 const captainsLogHtml = readFile("captains-log.html");
+const medicalBayHtml = readFile("medical-bay.html");
 const stylesCss = readFile("css/styles.css");
 const appJs = readFile("js/app.js");
 
-[indexHtml, captainsLogHtml].forEach(function (html) {
+[indexHtml, captainsLogHtml, medicalBayHtml].forEach(function (html) {
     assert(!/\son[a-z]+="/i.test(html), "Inline event handlers are not allowed.");
     assert(html.includes('href="#mainContent"'), "Missing skip link.");
     assert(html.includes('id="mainContent"'), "Missing main content landmark.");
@@ -37,8 +44,18 @@ const appJs = readFile("js/app.js");
 
 [
     "exportBackupButton",
+    "exportEncryptedBackupButton",
+    "clearHistoryButton",
+    "appStatus",
     "importBackupInput",
-    "recentLogsList"
+    "importEncryptedBackupInput",
+    "backupPassphraseInput",
+    "historySearchInput",
+    "recentLogsList",
+    "confirmModal",
+    "confirmModalMessage",
+    "confirmModalConfirmButton",
+    "confirmModalCancelButton"
 ].forEach(function (id) {
     assert(indexHtml.includes(`id="${id}"`), `Missing Command Deck element: ${id}`);
 });
@@ -51,16 +68,70 @@ const appJs = readFile("js/app.js");
     "saveCommandDeckStatusButton",
     "copyLogButton",
     "downloadLogButton",
-    "resetFormButton"
+    "resetFormButton",
+    "confirmModal",
+    "confirmModalMessage",
+    "confirmModalConfirmButton",
+    "confirmModalCancelButton"
 ].forEach(function (id) {
     assert(captainsLogHtml.includes(`id="${id}"`), `Missing Captain's Log control: ${id}`);
 });
 
 [
+    "healthDateInput",
+    "healthOverallPain",
+    "healthBestPain",
+    "healthWorstPain",
+    "healthPainLocation",
+    "healthMood",
+    "healthAnxiety",
+    "healthStress",
+    "healthSleepHours",
+    "healthSleepQuality",
+    "healthWakeups",
+    "healthEnergy",
+    "healthFatigue",
+    "healthObservations",
+    "healthActivities",
+    "healthTriggers",
+    "healthWins",
+    "healthChallenges",
+    "saveMedicalLogButton",
+    "downloadMedicalLogButton",
+    "resetMedicalLogButton",
+    "medicalSummaryOutput",
+    "medicalHistoryList"
+].forEach(function (id) {
+    assert(medicalBayHtml.includes(`id="${id}"`), `Missing Medical Bay control: ${id}`);
+});
+
+[
     "exportBackup",
+    "exportEncryptedBackup",
     "importBackup",
+    "importEncryptedBackup",
     "setupActionHandlers",
+    "confirmAction",
     "restoreBackup",
+    "isValidBackup",
+    "encryptBackup",
+    "decryptBackup",
+    "deriveEncryptionKey",
+    "storageGetItem",
+    "storageSetItem",
+    "storageGetJson",
+    "showStatus",
+    "clearLogHistory",
+    "deleteHistoryEntry",
+    "downloadHistoryEntry",
+    "getHistoryEntrySearchText",
+    "saveMedicalBayLog",
+    "downloadMedicalBayLog",
+    "resetMedicalBayForm",
+    "getMedicalBayData",
+    "buildMedicalBayMarkdown",
+    "renderMedicalHistory",
+    "loadLatestMedicalEntry",
     "getSpeechRecognitionConstructor",
     "setVoiceCaptureControlsState",
     "getVoiceCaptureErrorMessage"

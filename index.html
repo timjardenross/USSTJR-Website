@@ -17,6 +17,18 @@
     </header>
 
     <main id="mainContent" class="container">
+        <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
+
+        <div id="confirmModal" class="modal-backdrop" hidden>
+            <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+                <h2 id="confirmModalTitle">Confirm Action</h2>
+                <p id="confirmModalMessage"></p>
+                <div class="modal-actions">
+                    <button id="confirmModalConfirmButton" class="button" type="button">Confirm</button>
+                    <button id="confirmModalCancelButton" class="button secondary-button" type="button">Cancel</button>
+                </div>
+            </section>
+        </div>
 
         <section class="card command-status">
             <h2>Command Status</h2>
@@ -57,11 +69,26 @@
             <p><em>Daily logging system operational.</em></p>
         </section>
 
+        <section class="card captain-log-panel">
+            <h2>Medical Bay</h2>
+            <p>Record pain, sleep, energy, mood, and recovery notes for health trend intelligence.</p>
+
+            <a href="medical-bay.html" class="button">
+                Open Medical Bay
+            </a>
+            <p><em>Core health tracking operational.</em></p>
+        </section>
+
         <section class="card captain-log-panel" aria-labelledby="backupHeading">
             <h2 id="backupHeading">Backup</h2>
             <button id="exportBackupButton" class="button" type="button">Export Backup</button>
             <label for="importBackupInput" class="button secondary-button import-button">Import Backup</label>
             <input id="importBackupInput" class="visually-hidden" type="file" accept="application/json,.json">
+            <label for="backupPassphraseInput">Backup Passphrase</label>
+            <input id="backupPassphraseInput" type="password" autocomplete="new-password">
+            <button id="exportEncryptedBackupButton" class="button" type="button">Export Encrypted</button>
+            <label for="importEncryptedBackupInput" class="button secondary-button import-button">Import Encrypted</label>
+            <input id="importEncryptedBackupInput" class="visually-hidden" type="file" accept="application/json,.json">
         </section>
 
         <section class="two-column-grid">
@@ -92,7 +119,7 @@
             <ul>
                 <li>🖖 Command Deck — Online</li>
                 <li>📝 Captain's Log — Online</li>
-                <li>🏥 Medical Bay — In Development</li>
+                <li>🏥 Medical Bay — Online</li>
                 <li>🎯 Mission Control — Planned</li>
                 <li>🧠 Computer Core — Planned</li>
             </ul>
@@ -112,6 +139,9 @@
 
         <section class="card">
             <h2>Recent Logs</h2>
+            <label for="historySearchInput">Search Logs</label>
+            <input id="historySearchInput" type="search" placeholder="Search stardate, date, metrics, or log text">
+            <button id="clearHistoryButton" class="button secondary-button compact-button" type="button">Clear History</button>
             <div id="recentLogsList" class="history-list" aria-live="polite">
                 <p>No saved logs yet.</p>
             </div>
