@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USS TJR - Medical Bay</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
+
+    <header class="header">
+        <h1>Medical Bay</h1>
+        <p class="subtitle">Health Intelligence Platform</p>
+    </header>
+
+    <main id="mainContent" class="container">
+        <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
+
+        <div id="confirmModal" class="modal-backdrop" hidden>
+            <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+                <h2 id="confirmModalTitle">Confirm Action</h2>
+                <p id="confirmModalMessage"></p>
+                <div class="modal-actions">
+                    <button id="confirmModalConfirmButton" class="button" type="button">Confirm</button>
+                    <button id="confirmModalCancelButton" class="button secondary-button" type="button">Cancel</button>
+                </div>
+            </section>
+        </div>
+
+        <section class="card command-status">
+            <h2>Health Status</h2>
+            <p><strong>Latest Log:</strong> <span id="medicalLatestDate">No health log recorded yet</span></p>
+            <p><strong>Medical Bay:</strong> Online</p>
+        </section>
+
+        <section class="dashboard-grid" aria-label="Medical Bay latest metrics">
+            <div class="metric-card">
+                <h3>Pain</h3>
+                <p id="medicalLatestPain">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>Sleep</h3>
+                <p id="medicalLatestSleep">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>Energy</h3>
+                <p id="medicalLatestEnergy">--</p>
+            </div>
+            <div class="metric-card">
+                <h3>Stress</h3>
+                <p id="medicalLatestStress">--</p>
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="healthLogHeading">
+            <h2 id="healthLogHeading">Daily Health Log</h2>
+
+            <label for="healthDateInput">Date</label>
+            <input type="date" id="healthDateInput">
+
+            <div class="two-column-grid">
+                <div>
+                    <label for="healthOverallPain">Overall Pain</label>
+                    <input type="number" id="healthOverallPain" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+                </div>
+                <div>
+                    <label for="healthBestPain">Best Pain Today</label>
+                    <input type="number" id="healthBestPain" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+                </div>
+            </div>
+
+            <label for="healthWorstPain">Worst Pain Today</label>
+            <input type="number" id="healthWorstPain" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+
+            <label for="healthPainLocation">Pain Location</label>
+            <input type="text" id="healthPainLocation" placeholder="Back, SIJ, hip, knee, nerve pathway...">
+
+            <fieldset class="option-group">
+                <legend>Pain Type</legend>
+                <label><input type="checkbox" id="healthPainTypeBurning" value="Burning"> Burning</label>
+                <label><input type="checkbox" id="healthPainTypeSharp" value="Sharp"> Sharp</label>
+                <label><input type="checkbox" id="healthPainTypeAche" value="Ache"> Ache</label>
+                <label><input type="checkbox" id="healthPainTypeNerve" value="Nerve"> Nerve</label>
+                <label><input type="checkbox" id="healthPainTypeStiffness" value="Stiffness"> Stiffness</label>
+            </fieldset>
+        </section>
+
+        <section class="two-column-grid">
+            <div class="card">
+                <h2>Mood</h2>
+                <label for="healthMood">Mood Score</label>
+                <input type="number" id="healthMood" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+                <label for="healthAnxiety">Anxiety Score</label>
+                <input type="number" id="healthAnxiety" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+                <label for="healthStress">Stress Score</label>
+                <input type="number" id="healthStress" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+            </div>
+
+            <div class="card">
+                <h2>Sleep & Energy</h2>
+                <label for="healthSleepHours">Hours Slept</label>
+                <input type="number" id="healthSleepHours" min="0" max="24" step="0.25" inputmode="decimal" placeholder="Hours">
+                <label for="healthSleepQuality">Sleep Quality</label>
+                <input type="number" id="healthSleepQuality" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+                <label for="healthWakeups">Overnight Wake-Ups</label>
+                <input type="number" id="healthWakeups" min="0" step="1" inputmode="numeric" placeholder="Count">
+                <label for="healthEnergy">Energy Score</label>
+                <input type="number" id="healthEnergy" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+                <label for="healthFatigue">Fatigue Score</label>
+                <input type="number" id="healthFatigue" min="0" max="10" step="1" inputmode="numeric" placeholder="0-10">
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Daily Notes</h2>
+            <label for="healthObservations">Observations</label>
+            <textarea id="healthObservations" rows="4"></textarea>
+            <label for="healthActivities">Activities</label>
+            <textarea id="healthActivities" rows="4"></textarea>
+            <label for="healthTriggers">Triggers</label>
+            <textarea id="healthTriggers" rows="4"></textarea>
+            <label for="healthWins">Wins</label>
+            <textarea id="healthWins" rows="4"></textarea>
+            <label for="healthChallenges">Challenges</label>
+            <textarea id="healthChallenges" rows="4"></textarea>
+        </section>
+
+        <section class="card captain-log-panel">
+            <h2>Health Intelligence</h2>
+            <button id="saveMedicalLogButton" class="button" type="button">Save Health Log</button>
+            <button id="downloadMedicalLogButton" class="button" type="button">Download Markdown</button>
+            <button id="resetMedicalLogButton" class="button secondary-button" type="button">Reset Form</button>
+
+            <label for="medicalSummaryOutput" class="visually-hidden">Medical Bay summary output</label>
+            <textarea id="medicalSummaryOutput" rows="16" readonly></textarea>
+        </section>
+
+        <section class="card">
+            <h2>Recent Health Logs</h2>
+            <div id="medicalHistoryList" class="history-list" aria-live="polite">
+                <p>No health logs yet.</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <a href="index.html" class="button">Return to Command Deck</a>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>USS TJR v1.0 · Medical Bay Online</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

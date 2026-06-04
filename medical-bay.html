@@ -4,6 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>USS TJR - Medical Bay</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .placeholder-banner {
+            background: #222230;
+            border: 2px dashed #cc99cc;
+            border-radius: 18px;
+            padding: 40px 24px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .placeholder-banner .badge {
+            display: inline-block;
+            background: #cc99cc;
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 4px 14px;
+            border-radius: 999px;
+            margin-bottom: 16px;
+        }
+
+        .placeholder-banner h2 {
+            color: #cc99cc;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0 0 12px;
+        }
+
+        .placeholder-banner p {
+            color: #aaaaaa;
+            max-width: 480px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .module-card {
+            background: #181820;
+            border-left: 8px solid #cc99cc;
+            border-radius: 0 18px 18px 0;
+            padding: 20px;
+        }
+
+        .module-card h3 {
+            margin: 0 0 8px;
+            color: #cc99cc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .module-card p {
+            margin: 0;
+            color: #aaaaaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .status-pill {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-bottom: 10px;
+            background: #333344;
+            color: #cc99cc;
+        }
+
+        @media (max-width: 768px) {
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <h1>USS TJR Medical Bay</h1>
+        <p class="subtitle">Health Monitoring &amp; Recovery Systems</p>
+    </header>
+
+    <nav class="nav-bar" aria-label="Site navigation">
+        <a href="index.html">Command Deck</a>
+        <a href="captains-log.html">Captain's Log</a>
+        <a href="medical-bay.html" class="active">Medical Bay</a>
+    </nav>
+
+    <main class="container">
+
+        <div class="placeholder-banner">
+            <span class="badge">In Development</span>
+            <h2>🏥 Medical Bay</h2>
+            <p>This module is under construction. Health tracking, symptom logging, recovery metrics, and medical timeline features are planned for a future deployment.</p>
+        </div>
+
+        <section class="card">
+            <h2>Planned Systems</h2>
+            <div class="module-grid">
+
+                <div class="module-card">
+                    <span class="status-pill">Planned</span>
+                    <h3>Health Vitals Tracker</h3>
+                    <p>Log daily health metrics including weight, resting heart rate, sleep hours, and hydration.</p>
+                </div>
+
+                <div class="module-card">
+                    <span class="status-pill">Planned</span>
+                    <h3>Pain &amp; Symptom Log</h3>
+                    <p>Track pain levels, locations, and symptom patterns over time to surface trends.</p>
+                </div>
+
+                <div class="module-card">
+                    <span class="status-pill">Planned</span>
+                    <h3>Recovery Protocols</h3>
+                    <p>Monitor adherence to rehabilitation exercises, physical therapy, and rest protocols.</p>
+                </div>
+
+                <div class="module-card">
+                    <span class="status-pill">Planned</span>
+                    <h3>Medication Register</h3>
+                    <p>Record medications, dosages, schedules, and observed effects.</p>
+                </div>
+
+                <div class="module-card">
+                    <span class="status-pill">Planned</span>
+                    <h3>Medical Timeline</h3>
+                    <p>A chronological view of appointments, diagnoses, procedures, and milestones.</p>
+                </div>
+
+                <div class="module-card">
+                    <span class="status-pill">Planned</span>
+                    <h3>Health Trend Reports</h3>
+                    <p>Visualise metric trends pulled from Captain's Log entries and direct Medical Bay inputs.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Current Health Data</h2>
+            <p>Pain and energy readings from your latest Captain's Log entry are shown on the <a href="index.html" style="color: #ffcc66;">Command Deck</a>. Full Medical Bay integration will pull these values automatically once this module is operational.</p>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>USS TJR v1.0 · Medical Bay — In Development</p>
+    </footer>
+
 
     <link rel="stylesheet" href="css/styles.css">
 </head>
