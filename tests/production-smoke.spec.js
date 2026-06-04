@@ -21,6 +21,11 @@ test("production pages load without runtime errors", async ({ page }) => {
             heading: "Medical Bay",
             path: "medical-bay.html",
             selector: "#saveMedicalLogButton"
+        },
+        {
+            heading: "Computer Core",
+            path: "computer-core.html",
+            selector: "#askComputerButton"
         }
     ];
 

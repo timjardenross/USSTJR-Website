@@ -99,6 +99,7 @@ export function startVoiceCapture() {
 
     voiceRecognition.onerror = function (event) {
         updateRecordingStatus(getVoiceCaptureErrorMessage(event.error));
+        speakVoicePhrase("voiceError");
         isVoiceCaptureRunning = false;
         setVoiceCaptureControlsState();
         saveVoiceDraft();
@@ -116,11 +117,14 @@ export function startVoiceCapture() {
         isVoiceCaptureRunning = true;
         updateRecordingStatus("Recording");
         setVoiceCaptureControlsState();
+        speakVoicePhrase("listening");
+        showVoiceIndicatorListening();
     } catch (error) {
         console.error("Unable to start voice capture:", error);
         isVoiceCaptureRunning = false;
         updateRecordingStatus("Unable to start voice capture");
         setVoiceCaptureControlsState();
+        speakVoicePhrase("voiceError");
     }
 }
 
@@ -131,5 +135,25 @@ export function stopVoiceCapture() {
         updateRecordingStatus("Recording stopped");
         setVoiceCaptureControlsState();
         saveVoiceDraft();
+        speakVoicePhrase("voiceComplete");
+        showVoiceIndicatorIdle();
+    }
+}
+
+function speakVoicePhrase(phraseName) {
+    if (window.USSTJR && window.USSTJR.Voice && window.USSTJR.Voice.phrases) {
+        window.USSTJR.Voice.speak(window.USSTJR.Voice.phrases[phraseName]);
+    }
+}
+
+function showVoiceIndicatorListening() {
+    if (window.USSTJR && window.USSTJR.VoiceIndicator && typeof window.USSTJR.VoiceIndicator.showListening === "function") {
+        window.USSTJR.VoiceIndicator.showListening();
+    }
+}
+
+function showVoiceIndicatorIdle() {
+    if (window.USSTJR && window.USSTJR.VoiceIndicator && typeof window.USSTJR.VoiceIndicator.showIdle === "function") {
+        window.USSTJR.VoiceIndicator.showIdle();
     }
 }

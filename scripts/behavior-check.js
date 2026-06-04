@@ -14,6 +14,8 @@ const moduleFiles = [
     "js/modules/captains-log.js",
     "js/modules/medical-bay.js",
     "js/modules/backup.js",
+    "js/modules/local-query-engine.js",
+    "js/modules/computer-core.js",
     "js/main.js"
 ];
 const appSource = moduleFiles.map(function (filePath) {
@@ -104,6 +106,9 @@ function createContext(options) {
         commandPain: createElement({ textContent: "--" }),
         commandStardate: createElement({ textContent: "--" }),
         commandStress: createElement({ textContent: "--" }),
+        askComputerButton: createElement(),
+        computerQuestionInput: createElement({ value: "" }),
+        computerResponse: createElement(),
         dateInput: createElement({ value: settings.dateValue === undefined ? "2026-06-04" : settings.dateValue }),
         energy: createElement({ value: "7" }),
         gratitude: createElement({ value: "Gratitude logged" }),
@@ -131,6 +136,7 @@ function createContext(options) {
         healthTriggers: createElement({ value: "Long sitting block" }),
         healthWakeups: createElement({ value: "2" }),
         healthWins: createElement({ value: "Completed physio" }),
+        healthWorstPain: createElement({ value: "7" }),
         latestEnergy: createElement({ textContent: "--" }),
         latestEntryStardate: createElement({ textContent: "No entry recorded yet" }),
         latestMood: createElement({ textContent: "--" }),
@@ -614,6 +620,91 @@ async function testMedicalBayCoreTracking() {
     assert(app.fields.appStatus.textContent.includes("reset"), "Medical Bay reset should update status.");
 }
 
+function testComputerCoreLocalQueries() {
+    const empty = createContext();
+    const emptyAnswer = empty.context.answerLocalQuery("sleep");
+
+    assert(emptyAnswer.empty === true, "Computer Core should return an empty state with no records.");
+    assert(emptyAnswer.observation.includes("No local records found yet"), "Computer Core empty state should guide the user.");
+
+    const app = createContext();
+    app.context.saveCaptainLog();
+    app.context.saveMedicalBayLog();
+
+    const latestLog = app.context.answerLocalQuery("latest log");
+    assert(latestLog.title === "Latest Captain's Log", "Computer Core should answer latest log queries.");
+    assert(latestLog.sections[0].items.join(" ").includes("260604.01"), "Latest Captain's Log answer should include stardate.");
+
+    const sleepTrend = app.context.answerLocalQuery("sleeping and rest");
+    assert(sleepTrend.title === "Sleep Trend", "Computer Core should route sleep keywords to sleep trend.");
+    assert(sleepTrend.sections[0].items.join(" ").includes("Latest sleep: 6.5 hours"), "Sleep trend should include latest sleep.");
+
+    const painTrend = app.context.answerLocalQuery("pain trend");
+    assert(painTrend.title === "Pain Trend", "Computer Core should route pain keywords to pain trend.");
+    assert(painTrend.sections[0].items.join(" ").includes("Latest pain: 5"), "Pain trend should include latest pain.");
+
+    const medical = app.context.answerLocalQuery("medical bay");
+    assert(medical.title === "Latest Medical Bay Entry", "Computer Core should route medical keywords to Medical Bay.");
+
+    const summary = app.context.answerLocalQuery("summarise 7 days");
+    assert(summary.title === "Summarise Last 7 Days", "Computer Core should route summary keywords to seven-day summary.");
+    assert(summary.sections[0].items.join(" ").includes("Captain's Logs: 1"), "Seven-day summary should include Captain's Log count.");
+    assert(app.context.getFutureStorageKeys().includes("usstjr-cpap-history"), "Computer Core should expose future storage key architecture.");
+
+    app.context.submitComputerCoreQuery("pain");
+    assert(app.fields.computerResponse.children.length > 0, "Computer Core submit should render a response.");
+    assert(app.fields.computerResponse.children[0].textContent === "Pain Trend", "Computer Core rendered response should show query title.");
+}
+
+function testMedicalBayZeroMetricRendering() {
+    const app = createContext();
+
+    app.fields.healthOverallPain.value = "0";
+    app.fields.healthBestPain.value = "0";
+    app.fields.healthWorstPain.value = "0";
+    app.fields.healthMood.value = "0";
+    app.fields.healthStress.value = "0";
+    app.fields.healthSleepHours.value = "0";
+    app.fields.healthSleepQuality.value = "0";
+    app.fields.healthWakeups.value = "0";
+    app.fields.healthEnergy.value = "0";
+    app.fields.healthFatigue.value = "0";
+
+    app.context.saveMedicalBayLog();
+
+    assert(app.fields.medicalLatestPain.textContent === "0", "Medical Bay latest pain should render zero.");
+    assert(app.fields.medicalLatestSleep.textContent === "0", "Medical Bay latest sleep should render zero.");
+    assert(app.fields.medicalLatestEnergy.textContent === "0", "Medical Bay latest energy should render zero.");
+    assert(app.fields.medicalLatestStress.textContent === "0", "Medical Bay latest stress should render zero.");
+    assert(app.fields.medicalHistoryList.children[0].children[1].textContent.includes("Pain 0"), "Medical Bay history should render zero pain.");
+    assert(app.fields.medicalHistoryList.children[0].children[1].textContent.includes("Sleep 0h"), "Medical Bay history should render zero sleep.");
+    assert(app.fields.medicalHistoryList.children[0].children[1].textContent.includes("Wakeups 0"), "Medical Bay history should render zero wakeups.");
+    assert(app.fields.medicalHistoryList.children[0].children[1].textContent.includes("Energy 0"), "Medical Bay history should render zero energy.");
+    assert(app.fields.medicalHistoryList.children[0].children[1].textContent.includes("Mood 0"), "Medical Bay history should render zero mood.");
+    assert(app.fields.medicalSummaryOutput.value.includes("Current pain is 0 with worst pain 0."), "Medical Bay trend summary should render zero pain.");
+    assert(app.fields.medicalSummaryOutput.value.includes("Sleep was 0 hours at quality 0."), "Medical Bay trend summary should render zero sleep.");
+
+    const latestMedical = app.context.answerLocalQuery("medical bay");
+    const medicalItems = latestMedical.sections[0].items.join(" ");
+    assert(medicalItems.includes("Pain: 0"), "Computer Core latest Medical Bay response should render zero pain.");
+    assert(medicalItems.includes("Sleep: 0 hours"), "Computer Core latest Medical Bay response should render zero sleep.");
+    assert(medicalItems.includes("Wakeups: 0"), "Computer Core latest Medical Bay response should render zero wakeups.");
+
+    const missing = createContext();
+    missing.context.saveMedicalBayHistory([{
+        id: "medical-missing",
+        date: "2026-06-03",
+        painTypes: [],
+        updatedAt: "2026-06-03T00:00:00.000Z"
+    }]);
+    missing.context.loadLatestMedicalEntry();
+    missing.context.renderMedicalHistory();
+
+    assert(missing.fields.medicalLatestPain.textContent === "--", "Missing Medical Bay pain should render placeholder.");
+    assert(missing.fields.medicalHistoryList.children[0].children[1].textContent.includes("Pain --"), "Missing Medical Bay history pain should render placeholder.");
+    assert(missing.fields.medicalHistoryList.children[0].children[1].textContent.includes("Wakeups --"), "Missing Medical Bay history wakeups should render placeholder.");
+}
+
 function testCpapComplianceMonitoring() {
     const app = createContext();
 
@@ -845,6 +936,8 @@ async function main() {
     await testDownloadAndResetWorkflows();
     await testStardateAutomation();
     await testMedicalBayCoreTracking();
+    testComputerCoreLocalQueries();
+    testMedicalBayZeroMetricRendering();
     testCpapComplianceMonitoring();
     testWeightTrendTracking();
     testHistorySearch();

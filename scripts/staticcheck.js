@@ -205,7 +205,6 @@ assert(deploymentDocs.includes("Rollback"), "Deployment docs must include rollba
     [commandDeckJs, "renderRecentLogsToCommandDeck"],
     [captainsLogJs, "saveCaptainLog"],
     [captainsLogJs, "generateLog"],
-    [captainsLogJs, "saveCommandDeckStatus"],
     [captainsLogJs, "setupStardateAutomation"],
     [captainsLogJs, "recalculateStardateForSelectedDate"],
     [captainsLogJs, "loadHistoryEntryFromUrl"],
@@ -224,6 +223,23 @@ assert(deploymentDocs.includes("Rollback"), "Deployment docs must include rollba
     [voiceCaptureJs, "setVoiceCaptureControlsState"]
 ].forEach(function ([source, exportName]) {
     assert(source.includes(exportName), `Missing modular export or function: ${exportName}`);
+});
+
+[
+    mainJs,
+    captainsLogJs,
+    indexHtml,
+    captainsLogHtml,
+    medicalBayHtml
+].forEach(function (source) {
+    assert(!source.includes("saveCommandDeckStatusButton"), "Dead saveCommandDeckStatusButton binding should not exist.");
+});
+
+[
+    mainJs,
+    captainsLogJs
+].forEach(function (source) {
+    assert(!source.includes("saveCommandDeckStatus"), "Dead saveCommandDeckStatus workflow should not exist.");
 });
 
 assert(stylesCss.includes(".visually-hidden"), "Missing visually hidden utility.");

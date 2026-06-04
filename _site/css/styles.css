@@ -385,3 +385,161 @@ textarea {
         grid-template-columns: 1fr;
     }
 }
+<<<<<<< HEAD
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.settings-label {
+    font-weight: bold;
+    min-width: 120px;
+}
+
+.settings-row .helper-text {
+    width: 100%;
+    margin: 0;
+}
+
+/* ─────────────────────────────────────── */
+/* USS TJR Voice Command Button            */
+/* ─────────────────────────────────────── */
+
+.usstjr-voice-btn {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              8px;
+  padding:          8px 16px;
+  background:       transparent;
+  border:           1px solid rgba(91, 200, 245, 0.4);
+  border-left:      3px solid #5bc8f5;
+  border-radius:    4px;
+  color:            #5bc8f5;
+  font-family:      'Courier New', 'Lucida Console', monospace;
+  font-size:        11px;
+  letter-spacing:   0.15em;
+  text-transform:   uppercase;
+  cursor:           pointer;
+  transition:       all 0.2s ease;
+  position:         relative;
+  overflow:         hidden;
+}
+
+.usstjr-voice-btn:hover {
+  background:       rgba(91, 200, 245, 0.08);
+  border-color:     rgba(91, 200, 245, 0.8);
+}
+
+.usstjr-voice-btn:active {
+  transform:        scale(0.97);
+}
+
+/* Active / listening state */
+.usstjr-voice-btn.active {
+  border-left-color: #f5a623;
+  color:             #f5a623;
+  background:        rgba(245, 166, 35, 0.08);
+  border-color:      rgba(245, 166, 35, 0.4);
+  animation:         usstjr-btn-pulse 2s ease-in-out infinite;
+}
+
+@keyframes usstjr-btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 166, 35, 0); }
+  50%       { box-shadow: 0 0 0 4px rgba(245, 166, 35, 0.15); }
+}
+
+.usstjr-voice-btn__icon {
+  display:    flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.usstjr-voice-btn__label {
+  white-space: nowrap;
+}
+
+.usstjr-voice-toggle {
+  padding:        6px 14px;
+  background:     transparent;
+  border:         1px solid rgba(91, 200, 245, 0.4);
+  border-left:    3px solid rgba(91, 200, 245, 0.4);
+  border-radius:  4px;
+  color:          rgba(91, 200, 245, 0.5);
+  font-family:    'Courier New', 'Lucida Console', monospace;
+  font-size:      10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor:         pointer;
+  transition:     all 0.2s ease;
+}
+
+.usstjr-voice-toggle.active {
+  border-left-color: #5bc8f5;
+  color:             #5bc8f5;
+  background:        rgba(91, 200, 245, 0.06);
+}
+
+.usstjr-voice-toggle:hover {
+  border-color:   rgba(91, 200, 245, 0.7);
+  color:          #5bc8f5;
+}
+
+.computer-response h3,
+.computer-response h4 {
+  margin-bottom: 8px;
+}
+
+.computer-response ul {
+  margin-top: 0;
+}
+
+.computer-query-button {
+  margin: 4px 6px 4px 0;
+}
+
+/* Navigation bar styling */
+.nav-bar {
+  display:          flex;
+  align-items:      center;
+  justify-content:  space-between;
+  background:       #0d0d14;
+  padding:          12px 20px;
+  border-bottom:    1px solid #333;
+  gap:              16px;
+  flex-wrap:        wrap;
+}
+
+.nav-bar a {
+  color:            #5bc8f5;
+  text-decoration:  none;
+  font-size:        0.9rem;
+  font-weight:      bold;
+  padding:          8px 12px;
+  border-radius:    4px;
+  transition:       all 0.2s ease;
+}
+
+.nav-bar a:hover {
+  background:       rgba(91, 200, 245, 0.1);
+  color:            #ffffff;
+}
+
+.nav-bar a.active {
+  border-bottom:    2px solid #f5a623;
+  color:            #ffffff;
+}
+
+@media (max-width: 768px) {
+  .nav-bar {
+    flex-direction:  column;
+    align-items:     flex-start;
+  }
+
+  .usstjr-voice-btn {
+    width:           100%;
+    justify-content: center;
+  }
+}

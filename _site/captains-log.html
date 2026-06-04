@@ -16,6 +16,37 @@
         <p class="subtitle">Daily Mission Record</p>
     </header>
 
+    <nav class="nav-bar" aria-label="Site navigation">
+        <a href="index.html">Command Deck</a>
+        <a href="captains-log.html" class="active">Captain's Log</a>
+        <a href="medical-bay.html">Medical Bay</a>
+        <a href="computer-core.html">Computer Core</a>
+        <button
+          id="usstjr-voice-btn"
+          class="usstjr-voice-btn"
+          aria-label="Toggle Voice Commands"
+          title="Say 'Computer' followed by a command"
+        >
+          <span class="usstjr-voice-btn__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8"  y1="23" x2="16" y2="23"/>
+            </svg>
+          </span>
+          <span class="usstjr-voice-btn__label" id="usstjr-voice-btn-label">VOICE COMMANDS</span>
+        </button>
+        <button
+          id="usstjr-voice-toggle"
+          class="usstjr-voice-toggle"
+          onclick="USSTJR.Voice.setEnabled(!USSTJR.Voice.isEnabled())"
+          aria-label="Toggle voice output"
+        >
+          VOICE: OFF
+        </button>
+    </nav>
+
     <main id="mainContent" class="container">
         <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
 
@@ -126,12 +157,12 @@
         </section>
 
         <section class="card captain-log-panel" aria-labelledby="generateLogHeading">
-            <h2 id="generateLogHeading">Generate Log</h2>
+            <h2 id="generateLogHeading">Log Actions</h2>
 
-            <button id="generateLogButton" class="button" type="button">Generate Markdown</button>
-            <button id="saveCommandDeckStatusButton" class="button" type="button">Save Status</button>
+            <button id="saveCaptainLogButton" class="button" type="button">Save Captain's Log</button>
+            <button id="generateLogButton" class="button secondary-button" type="button">Preview Markdown</button>
             <button id="copyLogButton" class="button secondary-button" type="button">Copy Markdown</button>
-            <button id="downloadLogButton" class="button" type="button">Download Markdown</button>
+            <button id="downloadLogButton" class="button secondary-button" type="button">Download Markdown</button>
             <button id="resetFormButton" class="button secondary-button" type="button">Reset Form</button>
 
             <label for="markdownOutput" class="visually-hidden">Generated markdown output</label>
@@ -147,6 +178,79 @@
     <footer class="footer">
         <p>USS TJR v1.0 · Captain's Log Online</p>
     </footer>
+
+    <script src="js/voice-system.js"></script>
+    <script src="js/voice-indicator.js"></script>
+    <script>
+      (function () {
+        const btn = document.getElementById('usstjr-voice-toggle');
+        if (!btn) return;
+
+        function updateBtn() {
+          btn.textContent = USSTJR.Voice.isEnabled() ? 'VOICE: ON' : 'VOICE: OFF';
+          btn.classList.toggle('active', USSTJR.Voice.isEnabled());
+        }
+
+        USSTJR.Voice.on('enabled',  updateBtn);
+        USSTJR.Voice.on('disabled', updateBtn);
+        updateBtn();
+      })();
+    </script>
+    <script src="js/voice-commands.js"></script>
+
+    <script>
+      // Register Captain's Log voice command actions
+      USSTJR.VoiceCommands.registerAction('voiceStart',  () => startVoiceCapture());
+      USSTJR.VoiceCommands.registerAction('voiceStop',   () => stopVoiceCapture());
+      USSTJR.VoiceCommands.registerAction('saveLog',     () => downloadLog());
+      USSTJR.VoiceCommands.registerAction('clearDraft',  () => clearDraftAndResetForm());
+    </script>
+
+    <script>
+      (function () {
+        // Initialize voice button and state wiring
+        const btn   = document.getElementById('usstjr-voice-btn');
+        const label = document.getElementById('usstjr-voice-btn-label');
+
+        if (!btn || !label) return;
+
+        // Add click handler for voice button
+        btn.addEventListener('click', () => {
+          USSTJR.VoiceCommands.toggle();
+        });
+
+        USSTJR.VoiceCommands.on('activated',   () => {
+          btn.classList.add('active');
+          label.textContent = 'VOICE ACTIVE';
+        });
+
+        USSTJR.VoiceCommands.on('deactivated', () => {
+          btn.classList.remove('active');
+          label.textContent = 'VOICE COMMANDS';
+        });
+
+        USSTJR.VoiceCommands.on('awake', () => {
+          label.textContent = 'LISTENING...';
+        });
+
+        USSTJR.VoiceCommands.on('standby', () => {
+          label.textContent = 'VOICE ACTIVE';
+        });
+
+        USSTJR.VoiceCommands.on('command', () => {
+          label.textContent = 'VOICE ACTIVE';
+        });
+      })();
+    </script>
+
+    <script>
+      // Page load announcement
+      window.addEventListener('load', () => {
+        const stardate = localStorage.getItem('usstjr-stardate') || '';
+        USSTJR.Voice.speak(USSTJR.Voice.phrases.logReady)
+          .then(() => USSTJR.Voice.announceStardate(stardate));
+      });
+    </script>
 
     <script type="module" src="js/main.js"></script>
 

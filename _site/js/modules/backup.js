@@ -42,6 +42,7 @@ export function exportBackup() {
 
     downloadTextFile(filename, JSON.stringify(backup, null, 2), "application/json");
     showStatus("Backup exported.", "success");
+    speakVoicePhrase("complete");
 }
 
 export function importBackup(event) {
@@ -58,10 +59,12 @@ export function importBackup(event) {
         try {
             if (await restoreBackup(JSON.parse(String(reader.result || "{}")))) {
                 showStatus("Backup imported.", "success");
+                speakVoicePhrase("confirmed");
             }
         } catch (error) {
             console.error("Unable to import backup:", error);
             showStatus("Unable to import backup. Check that the file is a USS TJR JSON backup.", "error");
+            speakVoicePhrase("error");
         } finally {
             fileInput.value = "";
         }
@@ -93,6 +96,7 @@ export async function exportEncryptedBackup() {
 
     downloadTextFile(filename, JSON.stringify(encryptedBackup, null, 2), "application/json");
     showStatus("Encrypted backup exported.", "success");
+    speakVoicePhrase("complete");
 }
 
 export function importEncryptedBackup(event) {
@@ -125,10 +129,12 @@ export function importEncryptedBackup(event) {
 
             if (await restoreBackup(backup)) {
                 showStatus("Encrypted backup imported.", "success");
+                speakVoicePhrase("confirmed");
             }
         } catch (error) {
             console.error("Unable to import encrypted backup:", error);
             showStatus("Unable to import encrypted backup. Check the file and passphrase.", "error");
+            speakVoicePhrase("error");
         } finally {
             fileInput.value = "";
         }
@@ -331,15 +337,39 @@ export function isValidMedicalBayEntry(entry) {
         && isStringValue(entry.id)
         && isStringValue(entry.date)
         && Array.isArray(entry.painTypes)
+        && (!entry.cpap || isValidCpapEntry(entry.cpap))
+        && (!entry.weight || isValidWeightEntry(entry.weight))
         && isStringValue(entry.updatedAt);
 }
 
+export function isValidCpapEntry(entry) {
+    return isPlainObject(entry)
+        && isStringValue(entry.date)
+        && isNumberValue(entry.score)
+        && isNumberValue(entry.usageMinutes)
+        && isNumberValue(entry.maskSeal)
+        && isNumberValue(entry.eventsPerHour)
+        && isNumberValue(entry.maskOffCount)
+        && isStringValue(entry.notes);
+}
+
+export function isValidWeightEntry(entry) {
+    return isPlainObject(entry)
+        && isStringValue(entry.date)
+        && isNumberValue(entry.weight)
+        && (entry.waist === null || isNumberValue(entry.waist))
+        && isStringValue(entry.notes);
+}
 export function isPlainObject(value) {
     return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 export function isStringValue(value) {
     return typeof value === "string";
+}
+
+export function isNumberValue(value) {
+    return typeof value === "number" && Number.isFinite(value);
 }
 
 export function getStardateCounters() {
@@ -380,4 +410,10 @@ export function restoreStardateCounters(counters) {
             storageSetItem(key, String(counters[key]));
         }
     });
+}
+
+function speakVoicePhrase(phraseName) {
+    if (window.USSTJR && window.USSTJR.Voice && window.USSTJR.Voice.phrases) {
+        window.USSTJR.Voice.speak(window.USSTJR.Voice.phrases[phraseName]);
+    }
 }

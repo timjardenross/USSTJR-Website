@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USS TJR - Computer Core</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
+
+    <header class="header">
+        <h1>Computer Core</h1>
+        <p class="subtitle">Local Intelligence Interface</p>
+    </header>
+
+    <nav class="nav-bar" aria-label="Site navigation">
+        <a href="index.html">Command Deck</a>
+        <a href="captains-log.html">Captain's Log</a>
+        <a href="medical-bay.html">Medical Bay</a>
+        <a href="computer-core.html" class="active">Computer Core</a>
+        <button
+          id="usstjr-voice-toggle"
+          class="usstjr-voice-toggle"
+          onclick="USSTJR.Voice.setEnabled(!USSTJR.Voice.isEnabled())"
+          aria-label="Toggle voice output"
+        >
+          VOICE: OFF
+        </button>
+    </nav>
+
+    <main id="mainContent" class="container">
+        <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
+
+        <section class="card captain-log-panel" aria-labelledby="computerCoreHeading">
+            <h2 id="computerCoreHeading">Ask USS TJR</h2>
+            <p>Ask USS TJR about your local records.</p>
+
+            <label for="computerQuestionInput">Question</label>
+            <input id="computerQuestionInput" type="search" placeholder="Ask about sleep, pain, latest log, medical bay, or the last 7 days">
+            <button id="askComputerButton" class="button" type="button">Ask Computer</button>
+        </section>
+
+        <section class="card" aria-labelledby="suggestedQueriesHeading">
+            <h2 id="suggestedQueriesHeading">Suggested Queries</h2>
+            <button class="button secondary-button computer-query-button" type="button" data-query="Latest Captain's Log">Latest Captain's Log</button>
+            <button class="button secondary-button computer-query-button" type="button" data-query="Summarise Last 7 Days">Summarise Last 7 Days</button>
+            <button class="button secondary-button computer-query-button" type="button" data-query="Pain Trend">Pain Trend</button>
+            <button class="button secondary-button computer-query-button" type="button" data-query="Sleep Trend">Sleep Trend</button>
+            <button class="button secondary-button computer-query-button" type="button" data-query="Latest Medical Bay Entry">Latest Medical Bay Entry</button>
+        </section>
+
+        <section class="card" aria-labelledby="computerResponseHeading">
+            <h2 id="computerResponseHeading">Computer Core Response</h2>
+            <div id="computerResponse" class="computer-response" aria-live="polite">
+                <p>No query submitted yet.</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <a href="index.html" class="button">Return to Command Deck</a>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>USS TJR v1.0 · Computer Core Online</p>
+    </footer>
+
+    <script src="js/voice-system.js"></script>
+    <script src="js/voice-indicator.js"></script>
+    <script>
+      (function () {
+        const btn = document.getElementById('usstjr-voice-toggle');
+        if (!btn) return;
+
+        function updateBtn() {
+          btn.textContent = USSTJR.Voice.isEnabled() ? 'VOICE: ON' : 'VOICE: OFF';
+          btn.classList.toggle('active', USSTJR.Voice.isEnabled());
+        }
+
+        USSTJR.Voice.on('enabled',  updateBtn);
+        USSTJR.Voice.on('disabled', updateBtn);
+        updateBtn();
+      })();
+    </script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

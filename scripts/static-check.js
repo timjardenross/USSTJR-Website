@@ -6,6 +6,7 @@ const requiredFiles = [
     "index.html",
     "captains-log.html",
     "medical-bay.html",
+    "computer-core.html",
     "css/styles.css",
     "js/app.js",
     "js/main.js",
@@ -18,6 +19,8 @@ const requiredFiles = [
     "js/modules/captains-log.js",
     "js/modules/medical-bay.js",
     "js/modules/backup.js",
+    "js/modules/local-query-engine.js",
+    "js/modules/computer-core.js",
     "js/modules/voice-capture.js",
     "js/modules/confirm-modal.js",
     "js/voice-system.js",
@@ -58,6 +61,7 @@ requiredFiles.forEach(function (filePath) {
 const indexHtml = readFile("index.html");
 const captainsLogHtml = readFile("captains-log.html");
 const medicalBayHtml = readFile("medical-bay.html");
+const computerCoreHtml = readFile("computer-core.html");
 const stylesCss = readFile("css/styles.css");
 const appJs = readFile("js/app.js");
 const mainJs = readFile("js/main.js");
@@ -70,6 +74,8 @@ const commandDeckJs = readFile("js/modules/command-deck.js");
 const captainsLogJs = readFile("js/modules/captains-log.js");
 const medicalBayJs = readFile("js/modules/medical-bay.js");
 const backupJs = readFile("js/modules/backup.js");
+const localQueryEngineJs = readFile("js/modules/local-query-engine.js");
+const computerCoreJs = readFile("js/modules/computer-core.js");
 const voiceCaptureJs = readFile("js/modules/voice-capture.js");
 const confirmModalJs = readFile("js/modules/confirm-modal.js");
 const packageJson = JSON.parse(readFile("package.json"));
@@ -81,7 +87,7 @@ const validationWorkflowYml = readFile(".github/workflows/static-checks.yml");
 const productionDeployWorkflowYml = readFile(".github/workflows/production-deploy.yml");
 const deploymentDocs = readFile("docs/deployment.md");
 
-[indexHtml, captainsLogHtml, medicalBayHtml].forEach(function (html) {
+[indexHtml, captainsLogHtml, medicalBayHtml, computerCoreHtml].forEach(function (html) {
     const htmlWithoutApprovedVoiceToggle = html.replace(/\s+onclick="USSTJR\.Voice\.setEnabled\(!USSTJR\.Voice\.isEnabled\(\)\)"/g, "");
     assert(!/\son[a-z]+="/i.test(htmlWithoutApprovedVoiceToggle), "Inline event handlers are not allowed outside the approved voice toggle.");
     assert(html.includes('href="#mainContent"'), "Missing skip link.");
@@ -93,6 +99,8 @@ const deploymentDocs = readFile("docs/deployment.md");
     assert(html.indexOf('<script src="js/voice-indicator.js"></script>') !== -1, "Missing voice-indicator.js script.");
     assert(html.indexOf('<script src="js/voice-system.js"></script>') < html.indexOf('<script src="js/voice-indicator.js"></script>'), "voice-system.js must load before voice-indicator.js.");
 });
+
+assert(indexHtml.includes("Open Computer Core"), "Command Deck must link to Computer Core.");
 
 [
     "exportBackupButton",
@@ -184,6 +192,24 @@ const deploymentDocs = readFile("docs/deployment.md");
     assert(medicalBayHtml.includes(`id="${id}"`), `Missing Medical Bay control: ${id}`);
 });
 
+[
+    "computerQuestionInput",
+    "askComputerButton",
+    "computerResponse"
+].forEach(function (id) {
+    assert(computerCoreHtml.includes(`id="${id}"`), `Missing Computer Core control: ${id}`);
+});
+
+[
+    "Latest Captain's Log",
+    "Summarise Last 7 Days",
+    "Pain Trend",
+    "Sleep Trend",
+    "Latest Medical Bay Entry"
+].forEach(function (queryLabel) {
+    assert(computerCoreHtml.includes(queryLabel), `Missing Computer Core suggested query: ${queryLabel}`);
+});
+
 assert(appJs.trim() === 'import "./main.js";', "Legacy app.js should only be a compatibility shim.");
 assert(!Object.prototype.hasOwnProperty.call(packageJson, "type"), "package.json must not force CommonJS scripts into ESM mode.");
 assert(packageJson.scripts.check === "node scripts/run-checks.js", "Missing package check script.");
@@ -197,6 +223,7 @@ assert(productionPlaywrightConfigJs.includes("PRODUCTION_BASE_URL"), "Production
 assert(e2eSpecJs.includes("Command Deck loads correctly"), "Missing Command Deck E2E test.");
 assert(e2eSpecJs.includes("Captain's Log core workflow"), "Missing Captain's Log E2E test.");
 assert(e2eSpecJs.includes("Medical Bay core workflow"), "Missing Medical Bay E2E test.");
+assert(e2eSpecJs.includes("Computer Core local query workflow"), "Missing Computer Core E2E test.");
 assert(e2eSpecJs.includes("Backup export and import"), "Missing backup E2E test.");
 assert(productionSmokeSpecJs.includes("production pages load without runtime errors"), "Missing production smoke test.");
 assert(validationWorkflowYml.includes("name: USS TJR Validation"), "Validation workflow must have a clear USS TJR name.");
@@ -222,7 +249,6 @@ assert(deploymentDocs.includes("Rollback"), "Deployment docs must include rollba
     [commandDeckJs, "renderRecentLogsToCommandDeck"],
     [captainsLogJs, "saveCaptainLog"],
     [captainsLogJs, "generateLog"],
-    [captainsLogJs, "saveCommandDeckStatus"],
     [captainsLogJs, "setupStardateAutomation"],
     [captainsLogJs, "recalculateStardateForSelectedDate"],
     [captainsLogJs, "loadHistoryEntryFromUrl"],
@@ -235,6 +261,14 @@ assert(deploymentDocs.includes("Rollback"), "Deployment docs must include rollba
     [medicalBayJs, "buildWeightTrendSummary"],
     [medicalBayJs, "getWeightTrendDirection"],
     [medicalBayJs, "renderWeightDashboard"],
+    [localQueryEngineJs, "answerLocalQuery"],
+    [localQueryEngineJs, "getLatestCaptainLog"],
+    [localQueryEngineJs, "getLatestMedicalBayEntry"],
+    [localQueryEngineJs, "getPainTrend"],
+    [localQueryEngineJs, "getSleepTrend"],
+    [localQueryEngineJs, "getSevenDaySummary"],
+    [computerCoreJs, "initialiseComputerCore"],
+    [computerCoreJs, "submitComputerCoreQuery"],
     [backupJs, "exportBackup"],
     [backupJs, "exportEncryptedBackup"],
     [backupJs, "restoreBackup"],
@@ -245,6 +279,24 @@ assert(deploymentDocs.includes("Rollback"), "Deployment docs must include rollba
     [voiceCaptureJs, "setVoiceCaptureControlsState"]
 ].forEach(function ([source, exportName]) {
     assert(source.includes(exportName), `Missing modular export or function: ${exportName}`);
+});
+
+[
+    mainJs,
+    captainsLogJs,
+    indexHtml,
+    captainsLogHtml,
+    medicalBayHtml,
+    computerCoreHtml
+].forEach(function (source) {
+    assert(!source.includes("saveCommandDeckStatusButton"), "Dead saveCommandDeckStatusButton binding should not exist.");
+});
+
+[
+    mainJs,
+    captainsLogJs
+].forEach(function (source) {
+    assert(!source.includes("saveCommandDeckStatus"), "Dead saveCommandDeckStatus workflow should not exist.");
 });
 
 assert(stylesCss.includes(".visually-hidden"), "Missing visually hidden utility.");

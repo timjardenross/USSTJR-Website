@@ -16,9 +16,39 @@
         <p class="subtitle">Personal Resilience Operating System</p>
     </header>
 
+    <nav class="nav-bar" aria-label="Site navigation">
+        <a href="index.html" class="active">Command Deck</a>
+        <a href="captains-log.html">Captain's Log</a>
+        <a href="medical-bay.html">Medical Bay</a>
+        <a href="computer-core.html">Computer Core</a>
+        <button
+          id="usstjr-voice-btn"
+          class="usstjr-voice-btn"
+          aria-label="Toggle Voice Commands"
+          title="Say 'Computer' followed by a command"
+        >
+          <span class="usstjr-voice-btn__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8"  y1="23" x2="16" y2="23"/>
+            </svg>
+          </span>
+          <span class="usstjr-voice-btn__label" id="usstjr-voice-btn-label">VOICE COMMANDS</span>
+        </button>
+        <button
+          id="usstjr-voice-toggle"
+          class="usstjr-voice-toggle"
+          onclick="USSTJR.Voice.setEnabled(!USSTJR.Voice.isEnabled())"
+          aria-label="Toggle voice output"
+        >
+          VOICE: OFF
+        </button>
+    </nav>
+
     <main id="mainContent" class="container">
         <div id="appStatus" class="app-status" role="status" aria-live="polite" hidden></div>
-
         <div id="confirmModal" class="modal-backdrop" hidden>
             <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
                 <h2 id="confirmModalTitle">Confirm Action</h2>
@@ -79,6 +109,16 @@
             <p><em>Core health tracking operational.</em></p>
         </section>
 
+        <section class="card captain-log-panel">
+            <h2>Computer Core</h2>
+            <p>Ask USS TJR questions about your local records.</p>
+
+            <a href="computer-core.html" class="button">
+                Open Computer Core
+            </a>
+            <p><em>Local intelligence interface operational.</em></p>
+        </section>
+
         <section class="card captain-log-panel" aria-labelledby="backupHeading">
             <h2 id="backupHeading">Backup</h2>
             <button id="exportBackupButton" class="button" type="button">Export Backup</button>
@@ -121,7 +161,7 @@
                 <li>📝 Captain's Log — Online</li>
                 <li>🏥 Medical Bay — Online</li>
                 <li>🎯 Mission Control — Planned</li>
-                <li>🧠 Computer Core — Planned</li>
+                <li>🧠 Computer Core — Online</li>
             </ul>
         </section>
 
@@ -152,6 +192,69 @@
     <footer class="footer">
         <p>USS TJR v1.0 · Command Deck Online</p>
     </footer>
+
+    <script src="js/voice-system.js"></script>
+    <script src="js/voice-indicator.js"></script>
+    <script>
+      (function () {
+        const btn = document.getElementById('usstjr-voice-toggle');
+        if (!btn) return;
+
+        function updateBtn() {
+          btn.textContent = USSTJR.Voice.isEnabled() ? 'VOICE: ON' : 'VOICE: OFF';
+          btn.classList.toggle('active', USSTJR.Voice.isEnabled());
+        }
+
+        USSTJR.Voice.on('enabled',  updateBtn);
+        USSTJR.Voice.on('disabled', updateBtn);
+        updateBtn();
+      })();
+    </script>
+    <script src="js/voice-commands.js"></script>
+
+    <script>
+      (function () {
+        // Initialize voice button and state wiring
+        const btn   = document.getElementById('usstjr-voice-btn');
+        const label = document.getElementById('usstjr-voice-btn-label');
+
+        if (!btn || !label) return;
+
+        // Add click handler for voice button
+        btn.addEventListener('click', () => {
+          USSTJR.VoiceCommands.toggle();
+        });
+
+        USSTJR.VoiceCommands.on('activated',   () => {
+          btn.classList.add('active');
+          label.textContent = 'VOICE ACTIVE';
+        });
+
+        USSTJR.VoiceCommands.on('deactivated', () => {
+          btn.classList.remove('active');
+          label.textContent = 'VOICE COMMANDS';
+        });
+
+        USSTJR.VoiceCommands.on('awake', () => {
+          label.textContent = 'LISTENING...';
+        });
+
+        USSTJR.VoiceCommands.on('standby', () => {
+          label.textContent = 'VOICE ACTIVE';
+        });
+
+        USSTJR.VoiceCommands.on('command', () => {
+          label.textContent = 'VOICE ACTIVE';
+        });
+      })();
+    </script>
+
+    <script>
+      // Page load announcement
+      window.addEventListener('load', () => {
+        USSTJR.Voice.speak(USSTJR.Voice.phrases.online);
+      });
+    </script>
 
     <script type="module" src="js/main.js"></script>
 

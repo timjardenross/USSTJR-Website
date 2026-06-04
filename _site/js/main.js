@@ -12,7 +12,7 @@ import {
     generateLog,
     loadDraft,
     loadHistoryEntryFromUrl,
-    saveCommandDeckStatus,
+    saveCaptainLog,
     saveDraft,
     setupDraftAutosave,
     setupStardateAutomation
@@ -32,6 +32,7 @@ import {
     importBackup,
     importEncryptedBackup
 } from "./modules/backup.js";
+import { initialiseComputerCore } from "./modules/computer-core.js";
 import {
     setVoiceCaptureControlsState,
     setVoiceCaptureDraftSaver,
@@ -55,13 +56,14 @@ export function initialiseApp() {
     renderRecentLogsToCommandDeck();
     loadLatestMedicalEntry();
     renderMedicalHistory();
+    initialiseComputerCore();
 }
 
 export function setupActionHandlers() {
     bindClick("startVoiceCaptureButton", startVoiceCapture);
     bindClick("stopVoiceCaptureButton", stopVoiceCapture);
+    bindClick("saveCaptainLogButton", saveCaptainLog);
     bindClick("generateLogButton", generateLog);
-    bindClick("saveCommandDeckStatusButton", saveCommandDeckStatus);
     bindClick("copyLogButton", copyLog);
     bindClick("downloadLogButton", downloadLog);
     bindClick("resetFormButton", clearDraftAndResetForm);
@@ -88,5 +90,11 @@ export function setupActionHandlers() {
         historySearchInput.addEventListener("input", renderRecentLogsToCommandDeck);
     }
 }
+
+// Expose functions globally for inline scripts (e.g., voice command action registration)
+window.startVoiceCapture = startVoiceCapture;
+window.stopVoiceCapture = stopVoiceCapture;
+window.downloadLog = downloadLog;
+window.clearDraftAndResetForm = clearDraftAndResetForm;
 
 window.addEventListener("DOMContentLoaded", initialiseApp);

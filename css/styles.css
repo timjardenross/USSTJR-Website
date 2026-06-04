@@ -487,6 +487,19 @@ textarea {
   color:          #5bc8f5;
 }
 
+.computer-response h3,
+.computer-response h4 {
+  margin-bottom: 8px;
+}
+
+.computer-response ul {
+  margin-top: 0;
+}
+
+.computer-query-button {
+  margin: 4px 6px 4px 0;
+}
+
 /* Navigation bar styling */
 .nav-bar {
   display:          flex;

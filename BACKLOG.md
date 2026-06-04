@@ -22,6 +22,7 @@
 - Add one-click Captain's Log save that generates markdown, saves history, syncs Command Deck metrics, and preserves stardate sequencing.
 - Add CPAP compliance monitoring for myAir score, usage, mask seal, AHI, mask-off count, trends, status, compliance, and backup support.
 - Add weekly weight tracking for current weight, weekly change, trend direction, highest/lowest records, rolling trends, and backup support.
+- Add Computer Core local intelligence MVP for deterministic questions over local Captain's Log and Medical Bay records.
 
 ## Next Backlog Items
 

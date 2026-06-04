@@ -300,19 +300,6 @@ export function saveCaptainLog() {
     speakVoicePhrase("logDownloaded");
 }
 
-export function saveCommandDeckStatus() {
-    if (!validateMetricInputs()) {
-        return;
-    }
-
-    const logData = getCaptainLogData();
-    const markdown = logData.markdownOutput || buildCaptainLogMarkdown(logData);
-
-    persistCaptainLog(logData, markdown);
-    showStatus("Command Deck status and log history saved.", "success");
-    speakVoicePhrase("logDownloaded");
-}
-
 export function copyLog() {
     const output = document.getElementById("markdownOutput");
 

@@ -13,7 +13,6 @@ import {
     loadDraft,
     loadHistoryEntryFromUrl,
     saveCaptainLog,
-    saveCommandDeckStatus,
     saveDraft,
     setupDraftAutosave,
     setupStardateAutomation
@@ -33,6 +32,7 @@ import {
     importBackup,
     importEncryptedBackup
 } from "./modules/backup.js";
+import { initialiseComputerCore } from "./modules/computer-core.js";
 import {
     setVoiceCaptureControlsState,
     setVoiceCaptureDraftSaver,
@@ -56,6 +56,7 @@ export function initialiseApp() {
     renderRecentLogsToCommandDeck();
     loadLatestMedicalEntry();
     renderMedicalHistory();
+    initialiseComputerCore();
 }
 
 export function setupActionHandlers() {
@@ -63,7 +64,6 @@ export function setupActionHandlers() {
     bindClick("stopVoiceCaptureButton", stopVoiceCapture);
     bindClick("saveCaptainLogButton", saveCaptainLog);
     bindClick("generateLogButton", generateLog);
-    bindClick("saveCommandDeckStatusButton", saveCommandDeckStatus);
     bindClick("copyLogButton", copyLog);
     bindClick("downloadLogButton", downloadLog);
     bindClick("resetFormButton", clearDraftAndResetForm);

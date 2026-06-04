@@ -107,6 +107,12 @@ export function getMedicalBayData() {
     };
 }
 
+export function displayMetricValue(value, fallback) {
+    const placeholder = fallback === undefined ? "--" : fallback;
+
+    return value !== undefined && value !== null && value !== "" ? String(value) : placeholder;
+}
+
 export function getCpapDataFromFields() {
     const usageMinutes = parseCpapUsageTime(getFieldValue("cpapUsageTime"));
 
@@ -365,9 +371,9 @@ export function buildMedicalTrendSummary(data) {
         return entry.sleepHours;
     }));
     const lines = [
-        `Current pain is ${data.overallPain || "--"} with worst pain ${data.worstPain || "--"}.`,
-        `Sleep was ${data.sleepHours || "--"} hours at quality ${data.sleepQuality || "--"}.`,
-        `Energy is ${data.energy || "--"} and fatigue is ${data.fatigue || "--"}.`
+        `Current pain is ${displayMetricValue(data.overallPain)} with worst pain ${displayMetricValue(data.worstPain)}.`,
+        `Sleep was ${displayMetricValue(data.sleepHours)} hours at quality ${displayMetricValue(data.sleepQuality)}.`,
+        `Energy is ${displayMetricValue(data.energy)} and fatigue is ${displayMetricValue(data.fatigue)}.`
     ];
 
     if (previousPainAverage !== null) {
@@ -836,11 +842,11 @@ export function loadLatestMedicalEntry() {
         return;
     }
 
-    setTextContent("medicalLatestDate", latestEntry.date || "No health log recorded yet");
-    setTextContent("medicalLatestPain", latestEntry.overallPain || "--");
-    setTextContent("medicalLatestSleep", latestEntry.sleepHours || "--");
-    setTextContent("medicalLatestEnergy", latestEntry.energy || "--");
-    setTextContent("medicalLatestStress", latestEntry.stress || "--");
+    setTextContent("medicalLatestDate", displayMetricValue(latestEntry.date, "No health log recorded yet"));
+    setTextContent("medicalLatestPain", displayMetricValue(latestEntry.overallPain));
+    setTextContent("medicalLatestSleep", displayMetricValue(latestEntry.sleepHours));
+    setTextContent("medicalLatestEnergy", displayMetricValue(latestEntry.energy));
+    setTextContent("medicalLatestStress", displayMetricValue(latestEntry.stress));
     renderCpapDashboard();
     renderWeightDashboard();
 }
@@ -869,8 +875,8 @@ export function renderMedicalHistory() {
         const notes = document.createElement("p");
 
         item.className = "history-entry";
-        title.textContent = entry.date || "Undated health log";
-        metrics.textContent = `Pain ${entry.overallPain || "--"} · Sleep ${entry.sleepHours || "--"}h · Energy ${entry.energy || "--"} · Stress ${entry.stress || "--"} · CPAP ${entry.cpap ? `${entry.cpap.score} ${formatCpapUsage(entry.cpap.usageMinutes)}` : "--"} · Weight ${entry.weight ? formatWeight(entry.weight.weight) : "--"}`;
+        title.textContent = displayMetricValue(entry.date, "Undated health log");
+        metrics.textContent = `Pain ${displayMetricValue(entry.overallPain)} · Sleep ${displayMetricValue(entry.sleepHours)}h · Wakeups ${displayMetricValue(entry.wakeups)} · Energy ${displayMetricValue(entry.energy)} · Mood ${displayMetricValue(entry.mood)} · Stress ${displayMetricValue(entry.stress)} · CPAP ${entry.cpap ? `${displayMetricValue(entry.cpap.score)} ${formatCpapUsage(entry.cpap.usageMinutes)}` : "--"} · Weight ${entry.weight ? formatWeight(entry.weight.weight) : "--"}`;
         notes.textContent = entry.triggers ? `Triggers: ${entry.triggers}` : "No triggers recorded.";
 
         item.appendChild(title);

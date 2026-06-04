@@ -223,6 +223,41 @@ test("Medical Bay core workflow saves health intelligence", async ({ page }) => 
     await expect(page.locator("#weightLowest")).toHaveText("121.3 kg");
 });
 
+test("Medical Bay renders zero metric values accurately", async ({ page }) => {
+    await saveMedicalBayLog(page, {
+        overallPain: "0",
+        bestPain: "0",
+        worstPain: "0",
+        mood: "0",
+        anxiety: "0",
+        stress: "0",
+        sleepHours: "0",
+        sleepQuality: "0",
+        wakeups: "0",
+        energy: "0",
+        fatigue: "0",
+        triggers: "Zero metric regression"
+    });
+
+    await expect(page.locator("#medicalLatestPain")).toHaveText("0");
+    await expect(page.locator("#medicalLatestSleep")).toHaveText("0");
+    await expect(page.locator("#medicalLatestEnergy")).toHaveText("0");
+    await expect(page.locator("#medicalLatestStress")).toHaveText("0");
+    await expect(page.locator("#medicalHistoryList")).toContainText("Pain 0");
+    await expect(page.locator("#medicalHistoryList")).toContainText("Sleep 0h");
+    await expect(page.locator("#medicalHistoryList")).toContainText("Wakeups 0");
+    await expect(page.locator("#medicalHistoryList")).toContainText("Energy 0");
+    await expect(page.locator("#medicalHistoryList")).toContainText("Mood 0");
+    await expect(page.locator("#medicalSummaryOutput")).toHaveValue(/Current pain is 0 with worst pain 0\./);
+    await expect(page.locator("#medicalSummaryOutput")).toHaveValue(/Sleep was 0 hours at quality 0\./);
+
+    await page.goto("/computer-core.html");
+    await page.click("[data-query='Latest Medical Bay Entry']");
+    await expect(page.locator("#computerResponse")).toContainText("Pain: 0");
+    await expect(page.locator("#computerResponse")).toContainText("Sleep: 0 hours");
+    await expect(page.locator("#computerResponse")).toContainText("Wakeups: 0");
+});
+
 test("Medical Bay reset confirmation preserves or clears draft", async ({ page }) => {
     await page.goto("/medical-bay.html");
     await page.fill("#healthTriggers", "Draft trigger should survive cancel");
@@ -237,6 +272,37 @@ test("Medical Bay reset confirmation preserves or clears draft", async ({ page }
     await expect(page.locator("#healthTriggers")).toHaveValue("");
     await expect(page.locator("#cpapScore")).toHaveValue("");
     await expect(page.locator("#weightKg")).toHaveValue("");
+});
+
+test("Computer Core local query workflow", async ({ page }) => {
+    await saveCaptainsLog(page, {
+        wins: "Computer Core captain record"
+    });
+    await saveMedicalBayLog(page, {
+        overallPain: "5",
+        sleepHours: "6.5",
+        energy: "6",
+        triggers: "Computer Core medical trigger"
+    });
+
+    await page.goto("/index.html");
+    await expect(page.getByRole("heading", { name: "Computer Core" })).toBeVisible();
+    await page.click("text=Open Computer Core");
+    await expect(page.getByRole("heading", { name: "Computer Core" })).toBeVisible();
+    await expect(page.locator("#computerResponse")).toContainText("No query submitted yet.");
+
+    await page.click("[data-query='Sleep Trend']");
+    await expect(page.locator("#computerResponse")).toContainText("Sleep Trend");
+    await expect(page.locator("#computerResponse")).toContainText("Latest sleep: 6.5 hours");
+
+    await page.fill("#computerQuestionInput", "pain trend");
+    await page.click("#askComputerButton");
+    await expect(page.locator("#computerResponse")).toContainText("Pain Trend");
+    await expect(page.locator("#computerResponse")).toContainText("Latest pain: 5");
+
+    await page.click("[data-query=\"Latest Captain's Log\"]");
+    await expect(page.locator("#computerResponse")).toContainText("Latest Captain's Log");
+    await expect(page.locator("#computerResponse")).toContainText("Computer Core captain record");
 });
 
 test("Backup export and import include Captain's Log and Medical Bay data", async ({ page }, testInfo) => {
@@ -303,6 +369,11 @@ test("Browser module load smoke test", async ({ page }) => {
             heading: "Medical Bay",
             path: "/medical-bay.html",
             selector: "#saveMedicalLogButton"
+        },
+        {
+            heading: "Computer Core",
+            path: "/computer-core.html",
+            selector: "#askComputerButton"
         }
     ];
 

@@ -12,6 +12,8 @@ const jsFiles = [
     "js/modules/captains-log.js",
     "js/modules/medical-bay.js",
     "js/modules/backup.js",
+    "js/modules/local-query-engine.js",
+    "js/modules/computer-core.js",
     "js/modules/voice-capture.js",
     "js/modules/confirm-modal.js",
     "js/voice-system.js",

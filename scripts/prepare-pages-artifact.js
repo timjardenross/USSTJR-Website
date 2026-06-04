@@ -7,6 +7,7 @@ const filesToCopy = [
     "index.html",
     "captains-log.html",
     "medical-bay.html",
+    "computer-core.html",
     "README.md",
     "BACKLOG.md",
     "MEDICAL_BAY_SCOPE.md"

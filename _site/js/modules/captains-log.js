@@ -57,6 +57,8 @@ export function loadDraft() {
             field.value = draft[fieldId];
         }
     });
+
+    speakVoicePhrase("logRestored");
 }
 
 export function setupDraftAutosave() {
@@ -125,6 +127,7 @@ export async function clearDraftAndResetForm() {
         persist: false
     });
     showStatus("Captain's Log draft reset.", "success");
+    speakVoicePhrase("logCleared");
 }
 
 export function resetFormFields() {
@@ -253,13 +256,7 @@ export function validateMetricInputs() {
     return true;
 }
 
-export function saveCommandDeckStatus() {
-    if (!validateMetricInputs()) {
-        return;
-    }
-
-    const logData = getCaptainLogData();
-    const markdown = logData.markdownOutput || buildCaptainLogMarkdown(logData);
+function persistCaptainLog(logData, markdown) {
     const stardate = logData.stardateInput;
     const date = logData.dateInput;
     const latestEntry = getLatestEntry();
@@ -288,7 +285,19 @@ export function saveCommandDeckStatus() {
     }
 
     saveDraft();
-    showStatus("Command Deck status and log history saved.", "success");
+}
+
+export function saveCaptainLog() {
+    if (!validateMetricInputs()) {
+        return;
+    }
+
+    const logData = getCaptainLogData();
+    const markdown = buildCaptainLogMarkdown(logData);
+
+    persistCaptainLog(logData, markdown);
+    showStatus("Captain's Log saved.", "success");
+    speakVoicePhrase("logDownloaded");
 }
 
 export function copyLog() {
@@ -329,6 +338,7 @@ export function downloadLog() {
     const filename = `${date}-Stardate-${stardate}.md`;
 
     downloadTextFile(filename, markdown, "text/markdown");
+    speakVoicePhrase("logDownloaded");
 }
 
 export function getSavedDraft() {
@@ -382,4 +392,11 @@ export function loadHistoryEntryFromUrl() {
 
     setMarkdownOutput(entry.markdown || "");
     showStatus("Saved Captain's Log loaded.", "success");
+    speakVoicePhrase("logRestored");
+}
+
+function speakVoicePhrase(phraseName) {
+    if (window.USSTJR && window.USSTJR.Voice && window.USSTJR.Voice.phrases) {
+        window.USSTJR.Voice.speak(window.USSTJR.Voice.phrases[phraseName]);
+    }
 }
