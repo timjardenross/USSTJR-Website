@@ -35,7 +35,7 @@ test("production pages load without runtime errors", async ({ page }) => {
 
     for (const appPage of pages) {
         await page.goto(appPage.path);
-        await expect(page.getByRole("heading", { name: appPage.heading })).toBeVisible();
+        await expect(page.getByRole("heading", { name: appPage.heading, exact: true })).toBeVisible();
         await expect(page.locator(appPage.selector)).toBeVisible();
         await expect(page.locator("#confirmModal")).toBeHidden();
     }

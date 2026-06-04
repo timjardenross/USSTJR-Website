@@ -102,10 +102,10 @@ test.beforeEach(async ({ page }) => {
 test("Command Deck loads correctly", async ({ page }) => {
     await expectNoPageErrors(page, async function () {
         await page.goto("/index.html");
-        await expect(page.getByRole("heading", { name: "USS TJR Command Deck" })).toBeVisible();
-        await expect(page.getByRole("heading", { name: "Command Status" })).toBeVisible();
-        await expect(page.getByRole("heading", { name: "Captain's Log" })).toBeVisible();
-        await expect(page.getByRole("heading", { name: "Medical Bay" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "USS TJR Command Deck", exact: true })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "Command Status", exact: true })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "Captain's Log", exact: true })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "Medical Bay", exact: true })).toBeVisible();
         await expect(page.locator("#confirmModal")).toBeHidden();
     });
 });
@@ -354,9 +354,9 @@ test("Computer Core local query workflow", async ({ page }) => {
     });
 
     await page.goto("/index.html");
-    await expect(page.getByRole("heading", { name: "Computer Core" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Computer Core", exact: true })).toBeVisible();
     await page.click("text=Open Computer Core");
-    await expect(page.getByRole("heading", { name: "Computer Core" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Computer Core", exact: true })).toBeVisible();
     await expect(page.locator("#computerResponse")).toContainText("No query submitted yet.");
 
     await page.click("[data-query='Sleep Trend']");
@@ -449,7 +449,7 @@ test("Browser module load smoke test", async ({ page }) => {
     for (const appPage of pages) {
         await expectNoPageErrors(page, async function () {
             await page.goto(appPage.path);
-            await expect(page.getByRole("heading", { name: appPage.heading })).toBeVisible();
+            await expect(page.getByRole("heading", { name: appPage.heading, exact: true })).toBeVisible();
             await expect(page.locator(appPage.selector)).toBeVisible();
         });
     }
