@@ -1,4 +1,4 @@
-# USS TJR Deployment
+# USS TJR — Deployment
 
 ## Deployment Model
 
@@ -107,3 +107,11 @@ If GitHub Pages is unhealthy because of a workflow or Pages configuration proble
 5. If needed, temporarily redeploy the last known good commit by reverting and merging through the normal workflow.
 
 Do not bypass validation unless production is already down and a documented emergency rollback is required.
+
+---
+
+## Related Documentation
+
+- [Architecture](architecture.md) — system design and CI pipeline diagram
+- [Testing](testing.md) — full test suite documentation
+- [Runbook](runbook.md) — step-by-step operational procedures including rollback
