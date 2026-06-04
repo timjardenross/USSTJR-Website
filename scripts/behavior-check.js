@@ -286,6 +286,106 @@ function assert(condition, message) {
     }
 }
 
+function createVoiceSystemContext(options) {
+    const settings = options || {};
+    const store = Object.assign({}, settings.store || {});
+    const utterances = [];
+    const spoken = [];
+    const windowObject = {
+        USSTJR: {}
+    };
+
+    if (settings.withSpeechSynthesis !== false) {
+        windowObject.speechSynthesis = {
+            cancel() {},
+            getVoices() {
+                return [{
+                    lang: "en-US",
+                    name: "Test English"
+                }];
+            },
+            speak(utterance) {
+                spoken.push(utterance);
+                if (utterance.onend) {
+                    utterance.onend();
+                }
+            }
+        };
+    }
+
+    const context = {
+        console: {
+            log() {},
+            warn() {}
+        },
+        localStorage: {
+            getItem(key) {
+                return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null;
+            },
+            setItem(key, value) {
+                store[key] = String(value);
+            }
+        },
+        setTimeout(callback) {
+            callback();
+        },
+        SpeechSynthesisUtterance: function SpeechSynthesisUtterance(text) {
+            this.text = text;
+            utterances.push(this);
+        },
+        window: windowObject
+    };
+
+    vm.createContext(context);
+    vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "js/voice-system.js"), "utf8"), context);
+
+    return {
+        context,
+        spoken,
+        store,
+        utterances
+    };
+}
+
+async function testVoiceSystemPreferenceGate() {
+    const disabled = createVoiceSystemContext();
+
+    assert(disabled.context.window.USSTJR.Voice.isEnabled() === false, "Voice should be disabled by default.");
+    await disabled.context.window.USSTJR.Voice.speak("test");
+    assert(disabled.utterances.length === 0, "Disabled voice should not create an utterance.");
+    assert(disabled.spoken.length === 0, "Disabled voice should not queue speech.");
+
+    disabled.context.window.USSTJR.Voice.setEnabled(true);
+    assert(disabled.store["usstjr-voice-enabled"] === "true", "Voice enabled preference should persist.");
+    assert(disabled.context.window.USSTJR.Voice.isEnabled() === true, "Voice should report enabled after setEnabled(true).");
+    await disabled.context.window.USSTJR.Voice.speak("test");
+    assert(disabled.utterances.length === 1, "Enabled voice should create an utterance.");
+    assert(disabled.spoken.length === 1, "Enabled voice should queue speech synthesis.");
+
+    disabled.context.window.USSTJR.Voice.setEnabled(false);
+    assert(disabled.store["usstjr-voice-enabled"] === "false", "Voice disabled preference should persist.");
+    assert(disabled.context.window.USSTJR.Voice.isEnabled() === false, "Voice should report disabled after setEnabled(false).");
+}
+
+function testVoiceSystemLoadsPersistedPreference() {
+    const enabled = createVoiceSystemContext({
+        store: {
+            "usstjr-voice-enabled": "true"
+        }
+    });
+
+    assert(enabled.context.window.USSTJR.Voice.isEnabled() === true, "Voice should load persisted enabled preference.");
+}
+
+function testVoiceSystemUnsupportedBrowser() {
+    const unsupported = createVoiceSystemContext({
+        withSpeechSynthesis: false
+    });
+
+    assert(unsupported.context.window.USSTJR.Voice.isReady() === false, "Unsupported voice system should not report ready.");
+    assert(unsupported.context.window.USSTJR.Voice.isEnabled() === false, "Unsupported voice system should still default disabled.");
+}
+
 async function testLogHistoryAndBackup() {
     const app = createContext();
 
@@ -736,6 +836,9 @@ function testVoiceCaptureStates() {
 }
 
 async function main() {
+    await testVoiceSystemPreferenceGate();
+    testVoiceSystemLoadsPersistedPreference();
+    testVoiceSystemUnsupportedBrowser();
     await testLogHistoryAndBackup();
     await testCommandDeckSync();
     await testHistoryControls();

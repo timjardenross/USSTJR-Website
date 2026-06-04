@@ -762,6 +762,7 @@ export function saveMedicalBayLog() {
     loadLatestMedicalEntry();
     renderMedicalHistory();
     showStatus("Medical Bay health log saved.", "success");
+    speakVoicePhrase("saved");
 }
 
 export function downloadMedicalBayLog() {
@@ -896,5 +897,11 @@ export function restoreMedicalBayData(medicalBay) {
         storageSetJson(MEDICAL_BAY_DRAFT_KEY, medicalBay.draft);
     } else {
         storageRemoveItem(MEDICAL_BAY_DRAFT_KEY);
+    }
+}
+
+function speakVoicePhrase(phraseName) {
+    if (window.USSTJR && window.USSTJR.Voice && window.USSTJR.Voice.phrases) {
+        window.USSTJR.Voice.speak(window.USSTJR.Voice.phrases[phraseName]);
     }
 }

@@ -36,6 +36,14 @@
           </span>
           <span class="usstjr-voice-btn__label" id="usstjr-voice-btn-label">VOICE COMMANDS</span>
         </button>
+        <button
+          id="usstjr-voice-toggle"
+          class="usstjr-voice-toggle"
+          onclick="USSTJR.Voice.setEnabled(!USSTJR.Voice.isEnabled())"
+          aria-label="Toggle voice output"
+        >
+          VOICE: OFF
+        </button>
     </nav>
 
     <main id="mainContent" class="container">
@@ -174,8 +182,23 @@
         <p>USS TJR v1.0 · Command Deck Online</p>
     </footer>
 
-    <script src="js/voicesystem.js"></script>
-    <script src="js/voiceindicator.js"></script>
+    <script src="js/voice-system.js"></script>
+    <script src="js/voice-indicator.js"></script>
+    <script>
+      (function () {
+        const btn = document.getElementById('usstjr-voice-toggle');
+        if (!btn) return;
+
+        function updateBtn() {
+          btn.textContent = USSTJR.Voice.isEnabled() ? 'VOICE: ON' : 'VOICE: OFF';
+          btn.classList.toggle('active', USSTJR.Voice.isEnabled());
+        }
+
+        USSTJR.Voice.on('enabled',  updateBtn);
+        USSTJR.Voice.on('disabled', updateBtn);
+        updateBtn();
+      })();
+    </script>
     <script src="js/voice-commands.js"></script>
 
     <script>

@@ -20,6 +20,9 @@ const requiredFiles = [
     "js/modules/backup.js",
     "js/modules/voice-capture.js",
     "js/modules/confirm-modal.js",
+    "js/voice-system.js",
+    "js/voice-indicator.js",
+    "js/voice-commands.js",
     "package.json",
     "playwright.config.js",
     "playwright.production.config.js",
@@ -79,11 +82,16 @@ const productionDeployWorkflowYml = readFile(".github/workflows/production-deplo
 const deploymentDocs = readFile("docs/deployment.md");
 
 [indexHtml, captainsLogHtml, medicalBayHtml].forEach(function (html) {
-    assert(!/\son[a-z]+="/i.test(html), "Inline event handlers are not allowed.");
+    const htmlWithoutApprovedVoiceToggle = html.replace(/\s+onclick="USSTJR\.Voice\.setEnabled\(!USSTJR\.Voice\.isEnabled\(\)\)"/g, "");
+    assert(!/\son[a-z]+="/i.test(htmlWithoutApprovedVoiceToggle), "Inline event handlers are not allowed outside the approved voice toggle.");
     assert(html.includes('href="#mainContent"'), "Missing skip link.");
     assert(html.includes('id="mainContent"'), "Missing main content landmark.");
     assert(html.includes('<script type="module" src="js/main.js"></script>'), "HTML must load js/main.js as a native module.");
     assert(!html.includes('<script src="js/app.js"></script>'), "HTML must not load legacy js/app.js directly.");
+    assert(html.includes('id="usstjr-voice-toggle"'), "Missing voice output toggle.");
+    assert(html.indexOf('<script src="js/voice-system.js"></script>') !== -1, "Missing voice-system.js script.");
+    assert(html.indexOf('<script src="js/voice-indicator.js"></script>') !== -1, "Missing voice-indicator.js script.");
+    assert(html.indexOf('<script src="js/voice-system.js"></script>') < html.indexOf('<script src="js/voice-indicator.js"></script>'), "voice-system.js must load before voice-indicator.js.");
 });
 
 [

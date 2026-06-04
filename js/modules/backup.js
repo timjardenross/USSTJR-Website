@@ -42,9 +42,7 @@ export function exportBackup() {
 
     downloadTextFile(filename, JSON.stringify(backup, null, 2), "application/json");
     showStatus("Backup exported.", "success");
-    if (window.USSTJR && window.USSTJR.Voice) {
-        USSTJR.Voice.speak("Backup export complete, Captain.");
-    }
+    speakVoicePhrase("complete");
 }
 
 export function importBackup(event) {
@@ -61,13 +59,12 @@ export function importBackup(event) {
         try {
             if (await restoreBackup(JSON.parse(String(reader.result || "{}")))) {
                 showStatus("Backup imported.", "success");
-                if (window.USSTJR && window.USSTJR.Voice) {
-                    USSTJR.Voice.speak("Backup import complete, Captain.");
-                }
+                speakVoicePhrase("confirmed");
             }
         } catch (error) {
             console.error("Unable to import backup:", error);
             showStatus("Unable to import backup. Check that the file is a USS TJR JSON backup.", "error");
+            speakVoicePhrase("error");
         } finally {
             fileInput.value = "";
         }
@@ -99,9 +96,7 @@ export async function exportEncryptedBackup() {
 
     downloadTextFile(filename, JSON.stringify(encryptedBackup, null, 2), "application/json");
     showStatus("Encrypted backup exported.", "success");
-    if (window.USSTJR && window.USSTJR.Voice) {
-        USSTJR.Voice.speak("Backup export complete, Captain.");
-    }
+    speakVoicePhrase("complete");
 }
 
 export function importEncryptedBackup(event) {
@@ -134,13 +129,12 @@ export function importEncryptedBackup(event) {
 
             if (await restoreBackup(backup)) {
                 showStatus("Encrypted backup imported.", "success");
-                if (window.USSTJR && window.USSTJR.Voice) {
-                    USSTJR.Voice.speak("Backup import complete, Captain.");
-                }
+                speakVoicePhrase("confirmed");
             }
         } catch (error) {
             console.error("Unable to import encrypted backup:", error);
             showStatus("Unable to import encrypted backup. Check the file and passphrase.", "error");
+            speakVoicePhrase("error");
         } finally {
             fileInput.value = "";
         }
@@ -416,4 +410,10 @@ export function restoreStardateCounters(counters) {
             storageSetItem(key, String(counters[key]));
         }
     });
+}
+
+function speakVoicePhrase(phraseName) {
+    if (window.USSTJR && window.USSTJR.Voice && window.USSTJR.Voice.phrases) {
+        window.USSTJR.Voice.speak(window.USSTJR.Voice.phrases[phraseName]);
+    }
 }
