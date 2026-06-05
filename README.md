@@ -2,6 +2,19 @@
 
 USS TJR is a static personal resilience operating system. It provides a Command Deck dashboard, a Captain's Log for daily wellness logging, and a Medical Bay for health tracking. All data is stored locally in the browser — no server, no account, no external dependencies.
 
+## Relationship to USS TJR OS
+
+This repository is the browser interface layer of USS TJR.
+
+| Repository | Layer | Purpose |
+|---|---|---|
+| [USSTJROS](https://github.com/timjardenross/USSTJROS) | OS Core | Governance, specialists, command layer, memory, Slack runtime |
+| **USSTJR-Website** (this repo) | Interface | Captain's Log, Medical Bay, Computer Core, Command Deck |
+
+All USS TJR governance, specialist charters, and system design live in USSTJROS. This repository contains the browser-based tools that Captain TJR interacts with daily.
+
+---
+
 ## Current Structure
 
 ```text
@@ -67,6 +80,7 @@ USSTJR-Website/
 - `index.html` is the Command Deck. It shows mission status, current modules, current focus areas, the latest saved Captain's Log metrics, and backup management controls.
 - `captains-log.html` is the Captain's Log. It captures wellness metrics, written reflections, voice transcript text, tomorrow's priorities, and generates downloadable markdown.
 - `medical-bay.html` is the Medical Bay. It captures pain, mood, sleep, energy, CPAP compliance data, and daily health notes, then generates a health intelligence markdown summary.
+- `computer-core.html` is the Computer Core. It provides a local intelligence layer that answers deterministic questions over saved Captain's Log and Medical Bay records without sending data to an external service.
 
 The browser entry point is `js/main.js`, loaded with native ES modules. `js/app.js` is kept only as a compatibility shim.
 
